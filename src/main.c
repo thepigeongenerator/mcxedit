@@ -36,25 +36,25 @@ int main(int argc, char **argv)
 		fstat(fd, &st);
 		size = st.st_size;
 		if (size < MCX_TABLES) {
-			warnx("Skipping; too small to contain table: (%zuB)'%s'", size, argv[i]);
+			// warnx("%s: Too small to contain table: (%zuB)", argv[i], size);
 			close(fd);
 			continue;
 		}
 		tmp = size % MCX_SECTOR;
-		if (tmp) warnx("Not 4KiB sector aligned! (+%zuB) '%s'", tmp, argv[i]);
+		if (tmp) warnx("%s: Not 4KiB sector aligned! (-%zuB)", argv[i], MCX_SECTOR - tmp);
 
 		be32 *tbl = mmap(NULL, MCX_TABLES, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
 		if (tbl == MAP_FAILED) {
-			warn("Skipping; failed to map to '%s'", argv[i]);
+			warn("%s: Failed to map!", argv[i]);
 			close(fd);
 			continue;
 		}
 
-		size /= MCX_SECTOR;
-		esize = mcx_table_calcsize(tbl) / MCX_SECTOR;
+		esize = mcx_table_calcsize(tbl);
 		tmp   = size - esize;
+		if ((ssize)tmp < 0)
+			warnx("%s: Predicted a larger size than the actual size; file is corrupt! (%zdB)", argv[i], tmp);
 
-		if (tmp) printf("%s:  \test:%4zu act:%4zu diff:%+4zd\n", argv[i], esize, size, tmp);
 		munmap(tbl, MCX_TABLES);
 		close(fd);
 	}
