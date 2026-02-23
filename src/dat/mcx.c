@@ -9,8 +9,6 @@
 
 usize mcx_table_calcsize(const be32 *tbl)
 {
-	/* BUG: Sometimes still some sectors too few?
-	 * Maybe old/unused data? Why not truncate? */
 	const be32 *end = tbl + MCX_TABLE_LEN;
 
 	/* We can get away with comparing without masking,
