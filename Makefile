@@ -53,7 +53,7 @@ uninstall:
 	$(RM) $(DESTDIR)/bin/$(NAME)
 
 check:
-	-$(Q)$(SPARSE) $(CFLAGS) $(CPPFLAGS) $(SRC)
+	$(Q)$(SPARSE) $(CPPFLAGS) $(CFLAGS) $(SRC)
 
 clean:
 	$(Q)$(RM) $(OBJ) $(DEP)
