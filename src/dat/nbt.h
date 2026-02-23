@@ -2,7 +2,8 @@
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#pragma once
+#ifndef MCASELECTOR_LITE_NBT_H
+#define MCASELECTOR_LITE_NBT_H
 
 #include <assert.h>
 #include <stdbool.h>
@@ -66,3 +67,5 @@ const u8 *nbt_proctag(const u8 *restrict buf, u16 slen, void *restrict out) NONN
 /* searches for the end of a named tag without processing data, the final pointer is returned.
  * `NULL` is returned upon failure, the otherwise returned pointer is not guaranteed to be valid. */
 const u8 *nbt_nexttag(const u8 *restrict buf) NONNULL((1)) PURE;
+
+#endif /* MCASELECTOR_LITE_NBT_H */

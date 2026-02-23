@@ -2,7 +2,8 @@
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#pragma once
+#ifndef MCASELECTOR_LITE_MCX_H
+#define MCASELECTOR_LITE_MCX_H
 
 #include "../atrb.h"
 #include "../types.h"
@@ -24,3 +25,5 @@ usize mcx_table_calcsize(const be32 *tbl);
  * It is assumed that tbl points to a valid address
  * with sufficiently allocated memory. */
 usize mcx_table_minsize(const be32 *tbl);
+
+#endif /* MCASELECTOR_LITE_MCX_H */

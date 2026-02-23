@@ -2,7 +2,8 @@
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#pragma once
+#ifndef MCASELECTOR_LITE_CONF_H
+#define MCASELECTOR_LITE_CONF_H
 #include "../atrb.h"
 #include "../types.h"
 
@@ -28,3 +29,5 @@ int conf_getkeyval(const char *restrict buf, const char *const restrict *restric
 /* Processes the value of `type` in `val`. Outputs to `out`.
  * Returns non-zero on failure. */
 int conf_procval(u8 type, const char *restrict val, void *restrict out) NONNULL((2, 3));
+
+#endif /* MCASELECTOR_LITE_CONF_H */
