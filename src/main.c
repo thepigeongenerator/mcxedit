@@ -43,19 +43,19 @@ int main(int argc, char **argv)
 		tmp = size % MCX_SECTOR;
 		if (tmp) warnx("%s: Not 4KiB sector aligned! (-%zuB)", argv[i], MCX_SECTOR - tmp);
 
-		be32 *tbl = mmap(NULL, MCX_TABLES, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-		if (tbl == MAP_FAILED) {
+		void *mcx = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+		if (mcx == MAP_FAILED) {
 			warn("%s: Failed to map!", argv[i]);
 			close(fd);
 			continue;
 		}
 
-		esize = mcx_table_calcsize(tbl);
+		esize = mcx_table_calcsize(mcx);
 		tmp   = size - esize;
 		if ((ssize)tmp < 0)
 			warnx("%s: Predicted a larger size than the actual size; file is corrupt! (%zdB)", argv[i], tmp);
 
-		munmap(tbl, MCX_TABLES);
+		munmap(mcx, size);
 		close(fd);
 	}
 

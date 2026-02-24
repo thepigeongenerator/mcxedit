@@ -16,17 +16,17 @@
 
 /* Computes the size in bytes of the entire .mcX file,
  * according to the table.
- * It is assumed that tbl points to a valid address
- * with sufficiently allocated memory.
+ * It is assumed that mcx points to a valid address
+ * with at least 8KiB (two sectors) allocated space.
  * NOTE: This value may not be reflective of the actual value,
  * Minecraft leaves unallocated sectors at the end of the file. If this value
  * is higher than the actual file size, then corruption has taken place. */
-usize mcx_table_calcsize(const be32 *tbl);
+usize mcx_table_calcsize(const void *mcx);
 
 /* Computes the minimum size in bytes required for the entire .mcX file,
  * according to the table.
- * It is assumed that tbl points to a valid address
- * with sufficiently allocated memory. */
-usize mcx_table_minsize(const be32 *tbl);
+ * It is assumed that mcx points to a valid address
+ * with at least 8KiB (two sectors) allocated space. */
+usize mcx_table_minsize(const void *mcx);
 
 #endif /* MCASELECTOR_LITE_MCX_H */

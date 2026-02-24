@@ -7,8 +7,9 @@
 #include "../endian.h"
 #include "../types.h"
 
-usize mcx_table_calcsize(const be32 *tbl)
+usize mcx_table_calcsize(const void *mcx)
 {
+	const be32 *tbl = mcx;
 	const be32 *end = tbl + MCX_TABLE_LEN;
 
 	/* We can get away with comparing without masking,
@@ -22,8 +23,9 @@ usize mcx_table_calcsize(const be32 *tbl)
 	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR;
 }
 
-usize mcx_table_minsize(const be32 *tbl)
+usize mcx_table_minsize(const void *mcx)
 {
+	const be32 *tbl = mcx;
 	const be32 *end = tbl + MCX_TABLE_LEN;
 
 	usize sum = 0;
