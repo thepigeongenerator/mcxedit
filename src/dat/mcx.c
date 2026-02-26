@@ -4,6 +4,7 @@
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
 #include "mcx.h"
 
+#include <err.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -23,6 +24,35 @@ static int mcx_table_item_compar(const void *ma, const void *mb)
 {
 	const struct mcx_table_item *a = ma, *b = mb;
 	return a->val - b->val;
+}
+
+void mcx_repair(void *mcx, usize size)
+{
+	u32   tmp, max, sectors, offset;
+	be32 *tbl = mcx;
+	for (int i = 0; i < MCX_TABLE_LEN; ++i) {
+		if (!tbl[i]) continue;
+		tmp     = cvt_be32toh(tbl[i]);
+		sectors = tmp & 0xFF;
+		offset  = tmp >> 8;
+		max     = (sectors + offset) * MCX_SECTOR;
+
+		if (offset < 2 || !sectors) {
+			warnx("(%u,%u): Chunk has invalid sectors.",
+				i % 32, i / 32);
+			tbl[i] = 0;
+			continue;
+		}
+
+		/* TODO: Add functionality that looks at the payload data,
+		 * and attempts to restore from that, if possible. */
+		if (max > size) {
+			warnx("(%u,%u): Chunk exeeds the maximum file size, need %zuB, got %zuB",
+				i % 32, i / 32, (usize)max, size);
+			tbl[i] = 0;
+			continue;
+		}
+	}
 }
 
 /* Sort the table based on offset,
