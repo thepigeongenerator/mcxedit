@@ -7,7 +7,7 @@
 #include "../endian.h"
 #include "../types.h"
 
-usize mcx_table_calcsize(const void *mcx)
+usize mcx_calcsize(const void *mcx)
 {
 	const be32 *tbl = mcx;
 	const be32 *end = tbl + MCX_TABLE_LEN;
@@ -23,7 +23,7 @@ usize mcx_table_calcsize(const void *mcx)
 	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR;
 }
 
-usize mcx_table_minsize(const void *mcx)
+usize mcx_minsize(const void *mcx)
 {
 	const be32 *tbl = mcx;
 	const be32 *end = tbl + MCX_TABLE_LEN;

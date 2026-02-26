@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 			continue;
 		}
 
-		esize = mcx_table_calcsize(mcx);
+		esize = mcx_calcsize(mcx);
 		tmp   = size - esize;
 		if ((ssize)tmp < 0)
 			warnx("%s: Predicted a larger size than the actual size; file is corrupt! (%zdB)", argv[i], tmp);
