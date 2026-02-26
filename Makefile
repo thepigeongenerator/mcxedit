@@ -23,7 +23,7 @@ DEP := $(addsuffix .d,$(SRC))
 
 CFLAGS   := -O2 $(CFLAGS) -g -std=gnu17\
 	    -Wall -Wextra -Wpedantic -Wno-pointer-arith -Wvla
-CPPFLAGS := -DNDEBUG $(CPPFLAGS)
+CPPFLAGS := -DNDEBUG -U_GNU_SOURCE $(CPPFLAGS)
 LDFLAGS  := -flto $(LDFLAGS)
 LDLIBS   := $(LDLIBS) -lm -larchive
 
