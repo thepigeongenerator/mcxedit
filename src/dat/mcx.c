@@ -26,18 +26,19 @@ static int mcx_table_item_compar(const void *ma, const void *mb)
 	return a->val - b->val;
 }
 
-void mcx_repair(void *mcx, usize size)
+usize mcx_repair(void *mcx, usize size)
 {
-	u32   tmp, max, sectors, offset;
+	u32   max = 0, tmp; /* Using similar approach as in mcx_calcsize */
+	u32   chpos, chlen, chend;
 	be32 *tbl = mcx;
 	for (int i = 0; i < MCX_TABLE_LEN; ++i) {
 		if (!tbl[i]) continue;
-		tmp     = cvt_be32toh(tbl[i]);
-		sectors = tmp & 0xFF;
-		offset  = tmp >> 8;
-		max     = (sectors + offset) * MCX_SECTOR;
+		tmp   = cvt_be32toh(tbl[i]);
+		chlen = tmp & 0xFF;
+		chpos = tmp >> 8;
+		chend = (chlen + chpos) * MCX_SECTOR;
 
-		if (offset < 2 || !sectors) {
+		if (chpos < 2 || !chlen) {
 			warnx("(%u,%u): Chunk has invalid sectors.",
 				i % 32, i / 32);
 			tbl[i] = 0;
@@ -46,13 +47,17 @@ void mcx_repair(void *mcx, usize size)
 
 		/* TODO: Add functionality that looks at the payload data,
 		 * and attempts to restore from that, if possible. */
-		if (max > size) {
+		if (chend > size) {
 			warnx("(%u,%u): Chunk exeeds the maximum file size, need %zuB, got %zuB",
-				i % 32, i / 32, (usize)max, size);
+				i % 32, i / 32, (usize)chend, size);
 			tbl[i] = 0;
 			continue;
 		}
+
+		max = max < tmp ? tmp : max;
 	}
+
+	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR;
 }
 
 /* Sort the table based on offset,

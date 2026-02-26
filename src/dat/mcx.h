@@ -14,7 +14,11 @@
 #define MCX_TABLE_LEN  0x400  /* Amount of elements within one table. */
 #define MCX_TABLES_LEN 0x800  /* Amount of elements within the tables. */
 
-void mcx_repair(void *mcx, usize size);
+/* Repairs faults in the file format,
+ * outputting warnings describing the repaired fault & affected chunk.
+ * Returns the size of the file, which may be larger than,
+ * less than, or equal to the original size. */
+usize mcx_repair(void *mcx, usize size);
 
 /* Prunes the unused sections in a .mcX file.
  * It is assumed that the table is formatted correctly and
