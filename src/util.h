@@ -3,7 +3,7 @@
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
 #ifndef MCASELECTOR_LITE_UTIL_H
-#define MCASELECTOR_LITE_UTIL_H
+#define MCASELECTOR_LITE_UTIL_H 1
 
 /* Acquires the next power of two of value `x`.
  * Automatically determines the type (and therefore the width) of `x`.

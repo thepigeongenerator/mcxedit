@@ -3,7 +3,7 @@
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
 #ifndef MCASELECTOR_LITE_ENDIAN_H
-#define MCASELECTOR_LITE_ENDIAN_H
+#define MCASELECTOR_LITE_ENDIAN_H 1
 
 #include "types.h"
 

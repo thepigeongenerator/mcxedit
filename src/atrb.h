@@ -3,7 +3,7 @@
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
 #ifndef MCASELECTOR_LITE_ATRB_H
-#define MCASELECTOR_LITE_ATRB_H
+#define MCASELECTOR_LITE_ATRB_H 1
 
 #if defined(__has_attribute)
 

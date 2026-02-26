@@ -3,7 +3,7 @@
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcaselector-lite. */
 #ifndef MCASELECTOR_LITE_TYPES_H
-#define MCASELECTOR_LITE_TYPES_H
+#define MCASELECTOR_LITE_TYPES_H 1
 
 typedef signed long long int llong;
 typedef unsigned short int   ushort;
