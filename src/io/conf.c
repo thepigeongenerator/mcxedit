@@ -28,6 +28,9 @@ int conf_getkeyval(const char *restrict buf,
 {
 	const char *tmp = NULL;
 
+	/* Find the point at which the string no-longer
+	 * matches, if the key's value at this location is
+	 * NIL, then it is a match. */
 	ASSUME((klen > 0));
 	int i = 0;
 	for (; i < klen && !tmp; i++) {
