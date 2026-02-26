@@ -62,7 +62,7 @@ usize mcx_repair(void *mcx, usize size)
 
 /* Sort the table based on offset,
  * Then move the chunks down into empty space. */
-usize mcx_defrag(void *mcx, usize size)
+usize mcx_defrag(void *mcx)
 {
 	struct mcx_table_item tbl[MCX_TABLE_LEN];
 

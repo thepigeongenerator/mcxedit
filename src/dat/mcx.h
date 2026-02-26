@@ -24,7 +24,7 @@ usize mcx_repair(void *mcx, usize size);
  * It is assumed that the table is formatted correctly and
  * that all data is accessible.
  * Returns the new file size.*/
-usize mcx_defrag(void *mcx, usize size);
+usize mcx_defrag(void *mcx);
 
 /* Computes the size in bytes of the entire .mcX file,
  * according to the table.
