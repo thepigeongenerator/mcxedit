@@ -4,9 +4,6 @@
 > Once a pre-release, or release has been created in [the release tab](https://github.com/thepigeongenerator/mcxedit/releases),
 > it is ready for general usage and testing.
 
-# MCX Edit
-A from-scratch rewrite of [MCA-Selector](https://github.com/Querz/mcaselector) in C.
-
 [![licence](https://img.shields.io/github/license/thepigeongenerator/mcxedit.svg)](https://github.com/thepigeongenerator/mcxedit/blob/main/COPYING)
 [![issues](https://img.shields.io/github/issues/thepigeongenerator/mcxedit.svg)](https://github.com/thepigeongenerator/mcxedit/issues/)
 
@@ -17,18 +14,6 @@ This is useful for reducing world size, general world management,
 perhaps copying chunks from one world to another or various other administrative tasks.
 Although not the intended main use case, it is also possible to use this tool to view the world map.
 Though, it is recommended to use something like [dynmap](https://dynmap.wiki.gg/wiki/Home) instead (if applicable).
-
-## Why does this project exist?
-MCA-Selector is a tool written in Java. Which, at the time of writing depends upon JRE21 and JavaFX.
-Where the application is primarily developed for Windows users, where other platforms get a `.jar` file.
-I personally find this clunky to work with, and isn't too clean to install.
-The goal of this project is to provide an alternative for MCA-Selector,
-applying C to have a focus on performance and minimalism.
-I chose C, since it is my preferred language to work in & aligns with how I personally view software.
-I may decide to use another language, such as C++ for UI work, but the central functionality shall be C.
-The project is still under active development, the main part that I plan to offer with the tool is
-chunk deletion, world map viewing, and filtering. From there I may expand to offer more functionality
-with MCA-Selector, or go in my own direction.
 
 # Roadmap
 - [ ] First, I shall focus on writing code to view
@@ -50,3 +35,6 @@ Due to their viability and usefulness still needing to be measured.*
 - View chunk metadata
 - Change chunk sNBT
 - "Upgrading" `.mcr` regions to `.mca`.
+
+# Similar software
+* [MCA-Selector](https://github.com/Querz/mcaselector) (inspiration of this project)
