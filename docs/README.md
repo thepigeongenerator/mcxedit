@@ -38,7 +38,7 @@ with MCA-Selector, or go in my own direction.
   both `.mca` and `.mcr` files, and various levels of compression.
 - [ ] This shall expand into a "mode" that filters the chunks based on player time,
   further testing the NBT parsing capabilities, and deletion of chunks.
-- [ ] Also pruning unused sectors, such as in-between entries and towards the end.
+- [X] Also pruning unused sectors, such as in-between entries and towards the end.
 - [ ] A GUI shall be built, which is still unclear how this'll be implemented.
   For starters, the GUI shall purely provide viewing capabilities, at which point the roadmap
   shall be updated for features such as chunk selection, et cetera.
