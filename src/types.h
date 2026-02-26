@@ -1,9 +1,9 @@
-/* Copyright (C)2025 MCA-Selector-Lite
+/* Copyright (C)2025 mcxedit
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#ifndef MCASELECTOR_LITE_TYPES_H
-#define MCASELECTOR_LITE_TYPES_H 1
+ * at www.github.com/thepigeongenerator/mcxedit. */
+#ifndef MCXEDIT_TYPES_H
+#define MCXEDIT_TYPES_H 1
 
 typedef signed long long int llong;
 typedef unsigned short int   ushort;
@@ -51,4 +51,4 @@ typedef float f32;
 #if __SIZEOF_DOUBLE__ == 8
 typedef double f64;
 #endif
-#endif /* MCASELECTOR_LITE_TYPES_H */
+#endif /* MCXEDIT_TYPES_H */

@@ -1,9 +1,9 @@
-/* Copyright (C)2025 MCA-Selector-Lite
+/* Copyright (C)2025 mcxedit
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#ifndef MCASELECTOR_LITE_CONF_H
-#define MCASELECTOR_LITE_CONF_H 1
+ * at www.github.com/thepigeongenerator/mcxedit. */
+#ifndef MCXEDIT_CONF_H
+#define MCXEDIT_CONF_H 1
 #include "../atrb.h"
 #include "../types.h"
 
@@ -30,4 +30,4 @@ int conf_getkeyval(const char *restrict buf, const char *const restrict *restric
  * Returns non-zero on failure. */
 int conf_procval(u8 type, const char *restrict val, void *restrict out) NONNULL((2, 3));
 
-#endif /* MCASELECTOR_LITE_CONF_H */
+#endif /* MCXEDIT_CONF_H */

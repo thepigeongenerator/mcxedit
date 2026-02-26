@@ -1,9 +1,9 @@
-/* Copyright (C)2025-2026 MCA-Selector-Lite
+/* Copyright (C)2025-2026 mcxedit
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#ifndef MCASELECTOR_LITE_MCX_H
-#define MCASELECTOR_LITE_MCX_H 1
+ * at www.github.com/thepigeongenerator/mcxedit. */
+#ifndef MCXEDIT_MCX_H
+#define MCXEDIT_MCX_H 1
 
 #include "../atrb.h"
 #include "../types.h"
@@ -41,4 +41,4 @@ usize mcx_calcsize(const void *mcx);
  * with at least 8KiB (two sectors) allocated space. */
 usize mcx_minsize(const void *mcx);
 
-#endif /* MCASELECTOR_LITE_MCX_H */
+#endif /* MCXEDIT_MCX_H */

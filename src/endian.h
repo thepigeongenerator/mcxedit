@@ -1,9 +1,9 @@
-/* Copyright (C)2025-2026 MCA-Selector-Lite
+/* Copyright (C)2025-2026 mcxedit
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#ifndef MCASELECTOR_LITE_ENDIAN_H
-#define MCASELECTOR_LITE_ENDIAN_H 1
+ * at www.github.com/thepigeongenerator/mcxedit. */
+#ifndef MCXEDIT_ENDIAN_H
+#define MCXEDIT_ENDIAN_H 1
 
 #include "types.h"
 
@@ -37,4 +37,4 @@
 #error "Machine architecture unsupported! Expected either big-endian or little-endian."
 #endif
 
-#endif /* MCASELECTOR_LITE_ENDIAN_H */
+#endif /* MCXEDIT_ENDIAN_H */

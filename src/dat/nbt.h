@@ -1,9 +1,9 @@
-/* Copyright (C)2025-2026 MCA-Selector-Lite
+/* Copyright (C)2025-2026 mcxedit
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#ifndef MCASELECTOR_LITE_NBT_H
-#define MCASELECTOR_LITE_NBT_H 1
+ * at www.github.com/thepigeongenerator/mcxedit. */
+#ifndef MCXEDIT_NBT_H
+#define MCXEDIT_NBT_H 1
 
 #include <assert.h>
 #include <stdbool.h>
@@ -68,4 +68,4 @@ const u8 *nbt_proctag(const u8 *restrict buf, u16 slen, void *restrict out) NONN
  * `NULL` is returned upon failure, the otherwise returned pointer is not guaranteed to be valid. */
 const u8 *nbt_nexttag(const u8 *restrict buf) NONNULL((1)) PURE;
 
-#endif /* MCASELECTOR_LITE_NBT_H */
+#endif /* MCXEDIT_NBT_H */

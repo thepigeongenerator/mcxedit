@@ -1,12 +1,12 @@
-# Copyright (C)2026 MCA-Selector-Lite
+# Copyright (C)2026 mcxedit
 # Licensed under GPL-2.0-only. For further information,
 # view `git log`, and the COPYING and CONTRIBUTORS files
-# at www.github.com/thepigeongenerator/mcaselector-lite.
+# at www.github.com/thepigeongenerator/mcxedit.
 SHELL = /bin/sh
 .SUFFIXES:
 
 VERSION = 0.0
-NAME    = mcaselector-lite
+NAME    = mcxedit
 
 # Include a .config.mk, if it exists.
 # Allowing users to write persistent configurations

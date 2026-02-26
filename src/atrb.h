@@ -1,9 +1,9 @@
-/* Copyright (C)2025-2026 MCA-Selector-Lite
+/* Copyright (C)2025-2026 mcxedit
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcaselector-lite. */
-#ifndef MCASELECTOR_LITE_ATRB_H
-#define MCASELECTOR_LITE_ATRB_H 1
+ * at www.github.com/thepigeongenerator/mcxedit. */
+#ifndef MCXEDIT_ATRB_H
+#define MCXEDIT_ATRB_H 1
 
 #if defined(__has_attribute)
 
@@ -115,4 +115,4 @@
 
 #endif /* defined(__has_attribute) */
 
-#endif /* MCASELECTOR_LITE_ATRB_H */
+#endif /* MCXEDIT_ATRB_H */

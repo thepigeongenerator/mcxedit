@@ -1,7 +1,7 @@
-/* Copyright (C)2025 MCA-Selector-Lite
+/* Copyright (C)2025 mcxedit
  * Licensed under GPL-2.0-only. For further information,
  * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcaselector-lite. */
+ * at www.github.com/thepigeongenerator/mcxedit. */
 #include "conf.h"
 
 #include <assert.h>

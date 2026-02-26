@@ -1,17 +1,17 @@
 > [!CAUTION]
 > This application is __not__ ready for usage, and shouldn't be used.
 > It is under active development and most features are considered "béta",
-> Once a pre-release, or release has been created in [the release tab](https://github.com/thepigeongenerator/mcaselector-lite/releases),
+> Once a pre-release, or release has been created in [the release tab](https://github.com/thepigeongenerator/mcxedit/releases),
 > it is ready for general usage and testing.
 
-# MCA-Selector-Lite
+# MCX Edit
 A from-scratch rewrite of [MCA-Selector](https://github.com/Querz/mcaselector) in C.
 
-[![licence](https://img.shields.io/github/license/thepigeongenerator/mcaselector-lite.svg)](https://github.com/thepigeongenerator/mcaselector-lite/blob/main/COPYING)
-[![issues](https://img.shields.io/github/issues/thepigeongenerator/mcaselector-lite.svg)](https://github.com/thepigeongenerator/mcaselector-lite/issues/)
+[![licence](https://img.shields.io/github/license/thepigeongenerator/mcxedit.svg)](https://github.com/thepigeongenerator/mcxedit/blob/main/COPYING)
+[![issues](https://img.shields.io/github/issues/thepigeongenerator/mcxedit.svg)](https://github.com/thepigeongenerator/mcxedit/issues/)
 
 ## What does it do
-MCA-Selector-Lite is a tool used to edit [region files](https://minecraft.wiki/w/Region_file_format)
+MCX Edit is a tool used to edit [region files](https://minecraft.wiki/w/Region_file_format)
 of your [Minecraft Java](https://minecraft.wiki/w/Java_Edition) worlds.
 This is useful for reducing world size, general world management,
 perhaps copying chunks from one world to another or various other administrative tasks.

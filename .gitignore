@@ -15,6 +15,8 @@
 *.tar
 *.xz
 *.zip
+/mcxedit
+/mcxedit.exe
 
 # Ignore temporary files
 *.tmp
@@ -22,10 +24,6 @@
 
 compile_commands.events.json
 compile_commands.json
-
-# Ignore specific top-level files
-/mcaselector-lite
-/mcaselector-lite.exe
 
 # Unignore files we want to keep
 !.clang-format
