@@ -15,26 +15,23 @@ perhaps copying chunks from one world to another or various other administrative
 Although not the intended main use case, it is also possible to use this tool to view the world map.
 Though, it is recommended to use something like [dynmap](https://dynmap.wiki.gg/wiki/Home) instead (if applicable).
 
-# Roadmap
-- [ ] First, I shall focus on writing code to view
-  chunks, creating a map of the blocks. The code shall
-  produce a [ppm](https://en.wikipedia.org/wiki/Netpbm) file of a respective Y level.
-  This is to verify whether the binary parsing works correctly. It is intended to support
-  both `.mca` and `.mcr` files, and various levels of compression.
-- [ ] This shall expand into a "mode" that filters the chunks based on player time,
-  further testing the NBT parsing capabilities, and deletion of chunks.
-- [X] Also pruning unused sectors, such as in-between entries and towards the end.
-- [ ] A GUI shall be built, which is still unclear how this'll be implemented.
-  For starters, the GUI shall purely provide viewing capabilities, at which point the roadmap
-  shall be updated for features such as chunk selection, et cetera.
-
-# Miscellaneous planned features:
-*note that these entries aren't guaranteed to be implemented.
-Due to their viability and usefulness still needing to be measured.*
-- Changing chunk compression
-- View chunk metadata
-- Change chunk sNBT
-- "Upgrading" `.mcr` regions to `.mca`.
+# Planned Features
+* * [ ] Generating a map of the blocks,
+  producing a [ppm](https://en.wikipedia.org/wiki/Netpbm) file of a respective Y level.
+* Support both `.mca` and `.mcr` files, and various levels of compression.
+* * [ ] Filtering chunks based on player time.
+* * [X] Pruning unused sectors, such as in-between entries and towards the end.
+* * [ ] Region file repairs, as far as possible that is.
+* * [ ] Converting `.mcr` to `.mca`.
+* * [ ] Changing chunk compression.
+* * [ ] sNBT based chunk filtering.
+* * [ ] View/change chunk sNBT.
+* * [ ] CLI / Terminal - based input.
+* * [ ] GUI / Graphical - based input.
+> [!NOTE]
+> These entries are mostly ideas, and may not be
+> realistic to implement, or even reflect what direction
+> I end up taking the project.
 
 # Similar software
 * [MCA-Selector](https://github.com/Querz/mcaselector) (inspiration of this project)
