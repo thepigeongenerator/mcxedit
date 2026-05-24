@@ -78,44 +78,44 @@ int compat_close(struct file f)
 
 void *compat_map(struct file f, size_t size, int need_write)
 {
-	void *mcx;
+	void *map;
 #if defined(__unix__)
 	assert(f.fd >= 0);
 	int map_prot = need_write ? (PROT_READ | PROT_WRITE) : PROT_READ;
-	mcx          = mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
+	map          = mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
 #elif defined(_WIN32)
 	/* TODO: Implement usage of MapViewOfFile */
 	(void)need_write;
 	assert(f.h != NULL);
-	mcx = malloc(size);
-	if (!mcx) return COMPAT_NOMAP;
+	map = malloc(size);
+	if (!map) return COMPAT_NOMAP;
 	DWORD n;
-	if (!ReadFile(f.h, mcx, size, &n, NULL) || n != (uintmax_t)size) {
-		free(mcx);
+	if (!ReadFile(f.h, map, size, &n, NULL) || n != (uintmax_t)size) {
+		free(map);
 		return COMPAT_NOMAP;
 	}
 #else
 #error "Platform unsupported"
 #endif
-	return mcx;
+	return map;
 }
 
-int compat_unmap(const struct file f, void *mcx, size_t size)
+int compat_unmap(const struct file f, void *map, size_t size)
 {
-	assert(mcx != COMPAT_NOMAP);
+	assert(map != COMPAT_NOMAP);
 	assert(size > 0);
 #if defined(__unix__)
-	assert((uintptr_t)mcx % sysconf(_SC_PAGESIZE) == 0);
+	assert((uintptr_t)map % sysconf(_SC_PAGESIZE) == 0);
 	assert(f.fd >= 0);
 	(void)f;
-	return munmap(mcx, size);
+	return munmap(map, size);
 #elif defined(_WIN32)
 	/* TODO: Implement the usage of UnmapViewOfFile */
 	assert(f.h != NULL);
 	DWORD n;
-	if (!WriteFile(f.h, mcx, size, &n, NULL) || n != (uintmax_t)size)
+	if (!WriteFile(f.h, map, size, &n, NULL) || n != (uintmax_t)size)
 		return -1;
-	free(mcx);
+	free(map);
 	return 0;
 #else
 #error "Platform unsupported"
