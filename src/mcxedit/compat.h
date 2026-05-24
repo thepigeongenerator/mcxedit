@@ -23,7 +23,8 @@
 #elif defined(_WIN32)
 #define ISUNIX 0
 #define ISWIN  1
-#else "Platform unsupported"
+#else
+#error "Platform unsupported"
 #endif
 
 struct file {
