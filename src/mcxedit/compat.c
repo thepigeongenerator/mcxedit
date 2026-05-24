@@ -6,6 +6,7 @@
 #include "err.h"
 #include <assert.h>
 #include <errno.h>
+#include <stdint.h>
 
 #if defined(__unix__)
 #include <fcntl.h>
@@ -79,8 +80,6 @@ void *compat_map(struct file f, size_t size, int need_write)
 {
 	void *mcx;
 #if defined(__unix__)
-	/* FIX: It may be required that "size" is a multiple of
-	 * the page size returned by sysconf()*/
 	assert(f.fd >= 0);
 	int map_prot = need_write ? (PROT_READ | PROT_WRITE) : PROT_READ;
 	mcx          = mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
@@ -105,8 +104,7 @@ int compat_unmap(const struct file f, void *mcx, size_t size)
 	assert(mcx != COMPAT_NOMAP);
 	assert(size > 0);
 #if defined(__unix__)
-	/* FIX: It may be required that "size" is a multiple of
-	 * the page size returned by sysconf(_SC_PAGESIZE)*/
+	assert((uintptr_t)mcx % sysconf(_SC_PAGESIZE) == 0);
 	assert(f.fd >= 0);
 	(void)f;
 	return munmap(mcx, size);
