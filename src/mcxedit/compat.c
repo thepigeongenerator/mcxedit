@@ -16,6 +16,7 @@
 #elif defined(_WIN32)
 #include <fileapi.h>
 #include <handleapi.h>
+#include <memoryapi.h>
 #include <windows.h>
 #include <winnt.h>
 #else
@@ -35,7 +36,7 @@ off_t compat_open(const char *pat, struct file *f, int need_write)
 		goto err_stat;
 	return st.st_size;
 #elif defined(_WIN32)
-	/* TODO: Look into CreateFileMappingA */
+	/* BUG: Must use CreateFileMappingA */
 	f->h = CreateFileA((char *)pat,
 		need_write ? GENERIC_READ | GENERIC_WRITE : GENERIC_READ,
 		FILE_SHARE_READ,
@@ -76,39 +77,25 @@ int compat_close(struct file f)
 
 void *compat_map(struct file f, size_t size, int need_write)
 {
-	void *map;
 #if defined(__unix__)
 	int map_prot = need_write ? (PROT_READ | PROT_WRITE) : PROT_READ;
-	map          = mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
+	return mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
 #elif defined(_WIN32)
-	/* TODO: Implement usage of MapViewOfFile */
-	(void)need_write;
-	map = malloc(size);
-	if (!map) return COMPAT_NOMAP;
-	DWORD n;
-	if (!ReadFile(f.h, map, size, &n, NULL) || n != (uintmax_t)size) {
-		free(map);
-		return COMPAT_NOMAP;
-	}
+	int map_prot = need_write ? (FILE_MAP_READ | FILE_MAP_WRITE) : FILE_MAP_READ;
+	return MapViewOfFile(f.h, map_prot, 0, 0, size);
 #else
 #error "Platform unsupported"
 #endif
-	return map;
 }
 
-int compat_unmap(const struct file f, void *map, size_t size)
+int compat_unmap(void *map, size_t size)
 {
 #if defined(__unix__)
 	assert((uintptr_t)map % sysconf(_SC_PAGESIZE) == 0);
-	(void)f;
 	return munmap(map, size);
 #elif defined(_WIN32)
-	/* TODO: Implement the usage of UnmapViewOfFile */
-	DWORD n;
-	if (!WriteFile(f.h, map, size, &n, NULL) || n != (uintmax_t)size)
-		return -1;
-	free(map);
-	return 0;
+	(void)size;
+	return -!UnmapViewOfFile(map);
 #else
 #error "Platform unsupported"
 #endif

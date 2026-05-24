@@ -37,7 +37,7 @@ static int remap_truncate(struct file f, void **map, off_t oldsize, off_t newsiz
 	 * So remaps occur on growing. Windows always needs to remap. */
 	int remap = 0 ? oldsize < newsize : 1;
 	if (remap) {
-		if (compat_unmap(f, *map, oldsize) < 0) return -1;
+		if (compat_unmap(*map, oldsize) < 0) return -1;
 		if (compat_truncate(f, newsize) < 0) return -1;
 		*map = compat_map(f, newsize, need_write);
 		return -(*map == COMPAT_NOMAP);
@@ -115,7 +115,7 @@ static int procmcx(const char *pat, int opt)
 		if (!size) goto suc_close;
 	}
 
-	if (compat_unmap(f, mcx, size) < 0)
+	if (compat_unmap(mcx, size) < 0)
 		err(1, "cannot unmap '%s'", pat);
 suc_close:
 	if (compat_close(f) < 0)
@@ -129,7 +129,7 @@ suc_close:
 
 	return 0;
 err_unmap:
-	if (compat_unmap(f, mcx, size) < 0)
+	if (compat_unmap(mcx, size) < 0)
 		err(1, "cannot unmap '%s'", pat);
 err_close:
 	if (compat_close(f) < 0)

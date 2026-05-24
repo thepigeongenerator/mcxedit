@@ -57,7 +57,7 @@ void *compat_map(struct file f, size_t size, int need_write);
 /* Removes the mapping created with "compat_map".
  * "size" should be the amount of bytes that we're unmapping.
  * Returns 0 if successful, or -1 upon failure. */
-int compat_unmap(struct file f, void *map, size_t size);
+int compat_unmap(void *map, size_t size);
 
 /* Truncates file f to a specified size.
  * Returns 0 if successful, or -1 upon failure.
