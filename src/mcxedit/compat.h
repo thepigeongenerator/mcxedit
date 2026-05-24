@@ -17,6 +17,15 @@
 #error "Platform unsupported"
 #endif
 
+#if defined(__unix__)
+#define ISUNIX 1
+#define ISWIN  0
+#elif defined(_WIN32)
+#define ISUNIX 0
+#define ISWIN  1
+#else "Platform unsupported"
+#endif
+
 struct file {
 #if defined(__unix__)
 	int fd;

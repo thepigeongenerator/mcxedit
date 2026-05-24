@@ -84,6 +84,7 @@ void *compat_map(struct file f, size_t size, int need_write)
 	int map_prot = need_write ? (PROT_READ | PROT_WRITE) : PROT_READ;
 	mcx          = mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
 #elif defined(_WIN32)
+	/* TODO: Implement usage of MapViewOfFile */
 	(void)need_write;
 	assert(f.h != NULL);
 	mcx = malloc(size);
@@ -109,6 +110,7 @@ int compat_unmap(const struct file f, void *mcx, size_t size)
 	(void)f;
 	return munmap(mcx, size);
 #elif defined(_WIN32)
+	/* TODO: Implement the usage of UnmapViewOfFile */
 	assert(f.h != NULL);
 	DWORD n;
 	if (!WriteFile(f.h, mcx, size, &n, NULL) || n != (uintmax_t)size)
@@ -120,9 +122,6 @@ int compat_unmap(const struct file f, void *mcx, size_t size)
 #endif
 }
 
-/* WARN: On Windows, if using ViewOfFile™ the map must be
- * unmapped before truncation. POSIX defines shrinking correctly, but
- * growing may result in silent data loss. */
 int compat_truncate(struct file f, off_t size)
 {
 	assert(size >= 0);
