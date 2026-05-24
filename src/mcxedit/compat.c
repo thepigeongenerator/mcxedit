@@ -66,10 +66,8 @@ int compat_close(struct file f)
 #if defined(__unix__)
 	/* Decided to not handle the SIGINT edge case, since it's rare and
 	 * the programme exits after catching an interupt. */
-	assert(f.fd >= 0);
 	return close(f.fd);
 #elif defined(_WIN32)
-	assert(f.h != NULL);
 	return -!CloseHandle(f.h);
 #else
 #error "Platform unsupported"
@@ -80,13 +78,11 @@ void *compat_map(struct file f, size_t size, int need_write)
 {
 	void *map;
 #if defined(__unix__)
-	assert(f.fd >= 0);
 	int map_prot = need_write ? (PROT_READ | PROT_WRITE) : PROT_READ;
 	map          = mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
 #elif defined(_WIN32)
 	/* TODO: Implement usage of MapViewOfFile */
 	(void)need_write;
-	assert(f.h != NULL);
 	map = malloc(size);
 	if (!map) return COMPAT_NOMAP;
 	DWORD n;
@@ -102,16 +98,12 @@ void *compat_map(struct file f, size_t size, int need_write)
 
 int compat_unmap(const struct file f, void *map, size_t size)
 {
-	assert(map != COMPAT_NOMAP);
-	assert(size > 0);
 #if defined(__unix__)
 	assert((uintptr_t)map % sysconf(_SC_PAGESIZE) == 0);
-	assert(f.fd >= 0);
 	(void)f;
 	return munmap(map, size);
 #elif defined(_WIN32)
 	/* TODO: Implement the usage of UnmapViewOfFile */
-	assert(f.h != NULL);
 	DWORD n;
 	if (!WriteFile(f.h, map, size, &n, NULL) || n != (uintmax_t)size)
 		return -1;
@@ -124,14 +116,11 @@ int compat_unmap(const struct file f, void *map, size_t size)
 
 int compat_truncate(struct file f, off_t size)
 {
-	assert(size >= 0);
 	int e;
 #if defined(__unix__)
-	assert(f.fd >= 0);
 	do e = ftruncate(f.fd, size);
 	while (e < 0 && errno == EINTR); /* e = 0 or -1*/
 #elif defined(_WIN32)
-	assert(f.h != NULL);
 	LARGE_INTEGER slopsize = {.QuadPart = size};
 
 	e = -1;
