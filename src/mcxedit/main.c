@@ -3,7 +3,7 @@
  * view `git log`, and the COPYING and CONTRIBUTORS files
  * at www.github.com/thepigeongenerator/mcxedit. */
 #include "main.h"
-
+#include "compat.h"
 #include "err.h"
 #include "getopt.h"
 #include <errno.h>
@@ -13,20 +13,6 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#if defined(__unix__)
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#elif defined(_WIN32)
-#include <fileapi.h>
-#include <handleapi.h>
-#include <windows.h>
-#include <winnt.h>
-#else
-#error "Platform unsupported"
-#endif
 
 enum options {
 	OPT_VERBOSE = 1,
@@ -42,145 +28,6 @@ enum options {
 const char *argv0;
 static int  signaled = 0;
 
-struct file {
-#if defined(__unix__)
-	int fd;
-#elif _WIN32
-	HANDLE h;
-#else
-#error "Platform unsupported"
-#endif
-};
-
-/* Closes a file.
- * Returns 0 if successful, or -1 upon failure. */
-static int file_close(const struct file *f)
-{
-#if defined(__unix__)
-	int e;
-	do {
-		errno = 0;
-		e     = close(f->fd);
-	} while (e < 0 && errno == EINTR);
-	return e; /* e = 0 || -1 */
-#elif defined(_WIN32)
-	return -!CloseHandle(f->h);
-#else
-#error "Platform unsupported"
-#endif
-}
-
-/* Opens a file.
- * "pat" specifies the file-path.
- * need_write sets whether the file is writeable, or read-only.
- * Returns the file size, or -1 upon failure. */
-static off_t file_open(struct file *f, const char *pat, int need_write)
-{
-#if defined(__unix__)
-	f->fd = open(pat, need_write ? O_RDWR : O_RDONLY);
-	if (f->fd < 0)
-		goto err_open;
-	struct stat st;
-	if (fstat(f->fd, &st) < 0)
-		goto err_stat;
-	return st.st_size;
-#elif defined(_WIN32)
-	/* TODO: Look into CreateFileMappingA */
-	f->h = CreateFileA((char *)pat,
-		need_write ? GENERIC_READ | GENERIC_WRITE : GENERIC_READ,
-		FILE_SHARE_READ,
-		NULL,
-		OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
-	if (f->h == INVALID_HANDLE_VALUE)
-		goto err_open;
-	LARGE_INTEGER size;
-	if (!GetFileSizeEx(f->h, &size))
-		goto err_stat;
-	return size.QuadPart; /* Praise be, MicroSlop! */
-#else
-#error "Platform unsupported"
-#endif
-err_open:
-	warn("cannot open '%s'", pat);
-	return -1;
-err_stat:
-	warn("cannot stat '%s'", pat);
-	file_close(f);
-	return -1;
-}
-
-/* Maps "size" in bytes from *f to a memory address.
- * "need_write" dictates whether the mapping is writeable or read-only.
- * Returns (void *)-1 upon failure. (NULL is possibly a valid value) */
-static void *file_map(const struct file *f, off_t size, int need_write)
-{
-	void *mcx;
-#if defined(__unix__)
-	/* FIX: It may be required that "size" is a multiple of
-	 * the page size returned by sysconf()*/
-	int map_prot = need_write ? (PROT_READ | PROT_WRITE) : PROT_READ;
-	mcx          = mmap(NULL, size, map_prot, MAP_SHARED, f->fd, 0);
-#elif defined(_WIN32)
-	(void)need_write;
-	mcx = malloc(size);
-	if (!mcx) return (void *)-1;
-	DWORD n;
-	if (!ReadFile(f->h, mcx, size, &n, NULL) || n != (uintmax_t)size) {
-		free(mcx);
-		return (void *)-1;
-	}
-#else
-#error "Platform unsupported"
-#endif
-	return mcx;
-}
-
-/* Removes the mapping from created with "file_map".
- * "size" should be the amount of bytes that we're unmapping.
- * Returns 0 if successful, or -1 upon failure. */
-static int file_unmap(const struct file *f, void *mcx, off_t size)
-{
-#if defined(__unix__)
-	/* FIX: It may be required that "size" is a multiple of
-	 * the page size returned by sysconf()*/
-	(void)f;
-	return munmap(mcx, size);
-#elif defined(_WIN32)
-	DWORD n;
-	if (!WriteFile(f->h, mcx, size, &n, NULL) || n != (uintmax_t)size)
-		return -1;
-	free(mcx);
-	return 0;
-#else
-#error "Platform unsupported"
-#endif
-}
-
-/* WARN: On Windows, if using ViewOfFile™ the map must be
- * unmapped before truncation. POSIX defines shrinking correctly, but
- * growing may result in silent data loss. */
-/* Truncates file *f to a specified size.
- * Returns 0 if successful, or -1 upon failure. */
-static int file_truncate(const struct file *f, off_t size)
-{
-	int e;
-#if defined(__unix__)
-	do e = ftruncate(f->fd, size);
-	while (e < 0 && errno == EINTR); /* e = 0 or -1*/
-#elif defined(_WIN32)
-	LARGE_INTEGER slopsize = {.QuadPart = size};
-
-	e = -1;
-	if (SetFilePointerEx(f->h, slopsize, NULL, FILE_BEGIN))
-		e = -!SetEndOfFile(f->h);
-#else
-#error "Platform unsupported"
-#endif
-	return e;
-}
-
 /* Processes an .mcX file with the given options.
  * Returns non-zero on failure. */
 static int procmcx(const char *pat, int opt)
@@ -192,7 +39,7 @@ static int procmcx(const char *pat, int opt)
 	void *mcx;
 
 	/* Open the file, get and check the size. */
-	size = file_open(&f, pat, need_write);
+	size = compat_open(pat, &f, need_write);
 	if (size < 0) goto err;
 	if (size < MCX_TABLES) {
 		size = 0;
@@ -213,8 +60,8 @@ static int procmcx(const char *pat, int opt)
 		goto err_close;
 	}
 
-	mcx = file_map(&f, size, need_write);
-	if (mcx == (void *)-1) {
+	mcx = compat_map(f, size, need_write);
+	if (mcx == COMPAT_NOMAP) {
 		warn("cannot map '%s'", pat);
 		goto err_close;
 	}
@@ -233,7 +80,7 @@ static int procmcx(const char *pat, int opt)
 
 	if (opt & OPT_REPAIR) {
 		nsize = mcx_repair(mcx, size);
-		if (file_truncate(&f, nsize)) {
+		if (compat_truncate(f, nsize)) {
 			warn("cannot truncate '%s'", pat);
 			goto err_unmap;
 		}
@@ -243,7 +90,7 @@ static int procmcx(const char *pat, int opt)
 
 	if (opt & OPT_DEFRAG) {
 		nsize = mcx_defrag(mcx, size);
-		if (file_truncate(&f, nsize)) {
+		if (compat_truncate(f, nsize)) {
 			warn("cannot truncate '%s'", pat);
 			goto err_unmap;
 		}
@@ -251,10 +98,10 @@ static int procmcx(const char *pat, int opt)
 		if (!size) goto suc_close;
 	}
 
-	if (file_unmap(&f, mcx, size) < 0)
+	if (compat_unmap(f, mcx, size) < 0)
 		err(1, "cannot unmap '%s'", pat);
 suc_close:
-	if (file_close(&f) < 0)
+	if (compat_close(f) < 0)
 		err(1, "cannot close '%s'", pat);
 	if (opt & OPT_NEED_WRITE && !size) {
 		if (remove(pat))
@@ -265,10 +112,10 @@ suc_close:
 
 	return 0;
 err_unmap:
-	if (file_unmap(&f, mcx, size) < 0)
+	if (compat_unmap(f, mcx, size) < 0)
 		err(1, "cannot unmap '%s'", pat);
 err_close:
-	if (file_close(&f) < 0)
+	if (compat_close(f) < 0)
 		err(1, "cannot close '%s'", pat);
 err:
 	return 1;
