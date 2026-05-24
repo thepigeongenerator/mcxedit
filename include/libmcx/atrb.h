@@ -46,10 +46,8 @@
  * may not be NULL. It may be used for both function calls, and definitions. */
 #if __has_attribute(__nonnull__)
 #define NONNULL(args) __attribute__((__nonnull__ args))
-#define nonnull       __attribute__((__nonnull__))
 #else
 #define NONNULL(args)
-#define nonnull
 #endif /* __has_attribute(__nonnull__) */
 
 /* Marks that a function will not return, such as
