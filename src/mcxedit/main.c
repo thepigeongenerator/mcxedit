@@ -6,6 +6,7 @@
 #include "compat.h"
 #include "err.h"
 #include "getopt.h"
+#include <assert.h>
 #include <errno.h>
 #include <libmcx/mcx.h>
 #include <libmcx/types.h>
@@ -27,6 +28,22 @@ enum options {
 
 const char *argv0;
 static int  signaled = 0;
+
+static int remap_truncate(struct file f, void **map, off_t oldsize, off_t newsize, int need_write)
+{
+	assert(oldsize > 0);
+	assert(oldsize != newsize);
+	/* POSIX defines shrinking, but growing may result in implicit data loss.
+	 * So remaps occur on growing. Windows always needs to remap. */
+	int remap = 0 ? oldsize < newsize : 1;
+	if (remap) {
+		if (compat_unmap(f, *map, oldsize) < 0) return -1;
+		if (compat_truncate(f, newsize) < 0) return -1;
+		*map = compat_map(f, newsize, need_write);
+		return -(*map == COMPAT_NOMAP);
+	}
+	return compat_truncate(f, newsize);
+}
 
 /* Processes an .mcX file with the given options.
  * Returns non-zero on failure. */
@@ -80,7 +97,7 @@ static int procmcx(const char *pat, int opt)
 
 	if (opt & OPT_REPAIR) {
 		nsize = mcx_repair(mcx, size);
-		if (compat_truncate(f, nsize)) {
+		if (remap_truncate(f, &mcx, size, nsize, need_write)) {
 			warn("cannot truncate '%s'", pat);
 			goto err_unmap;
 		}
@@ -90,7 +107,7 @@ static int procmcx(const char *pat, int opt)
 
 	if (opt & OPT_DEFRAG) {
 		nsize = mcx_defrag(mcx, size);
-		if (compat_truncate(f, nsize)) {
+		if (remap_truncate(f, &mcx, size, nsize, need_write)) {
 			warn("cannot truncate '%s'", pat);
 			goto err_unmap;
 		}

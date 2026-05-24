@@ -48,7 +48,10 @@ void *compat_map(struct file f, size_t size, int need_write);
 int compat_unmap(struct file f, void *map, size_t size);
 
 /* Truncates file f to a specified size.
- * Returns 0 if successful, or -1 upon failure. */
+ * Returns 0 if successful, or -1 upon failure.
+ * NOTE:
+ * - On POSIX systems growing the size requires a remap.
+ * - On Windows systems this always requires a remap. */
 int compat_truncate(struct file f, off_t size);
 
 #endif /* MCXEDIT_COMPAT_H */
