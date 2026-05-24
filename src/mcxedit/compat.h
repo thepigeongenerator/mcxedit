@@ -6,23 +6,25 @@
 #ifndef MCXEDIT_COMPAT_H
 #define MCXEDIT_COMPAT_H 1
 
-/* Provide the COMPAT_NOMAP constant. */
+
 #if defined(__unix__)
 #include <sys/mman.h>
-#define COMPAT_NOMAP MAP_FAILED
 #elif defined(_WIN32)
 #include <stdlib.h>
-#define COMPAT_NOMAP NULL
+#include <windows.h>
+#include <winnt.h>
 #else
 #error "Platform unsupported"
 #endif
 
 #if defined(__unix__)
-#define ISUNIX 1
-#define ISWIN  0
+#define ISUNIX       1
+#define ISWIN        0
+#define COMPAT_NOMAP MAP_FAILED
 #elif defined(_WIN32)
-#define ISUNIX 0
-#define ISWIN  1
+#define ISUNIX       0
+#define ISWIN        1
+#define COMPAT_NOMAP NULL
 #else
 #error "Platform unsupported"
 #endif
