@@ -4,6 +4,7 @@
  * at www.github.com/thepigeongenerator/mcxedit. */
 #include "compat.h"
 #include "err.h"
+#include <assert.h>
 #include <errno.h>
 
 #if defined(__unix__)
@@ -22,6 +23,8 @@
 
 off_t compat_open(const char *pat, struct file *f, int need_write)
 {
+	assert(pat != NULL);
+	assert(f != NULL);
 #if defined(__unix__)
 	f->fd = open(pat, need_write ? O_RDWR : O_RDONLY);
 	if (f->fd < 0)
@@ -62,8 +65,10 @@ int compat_close(struct file f)
 #if defined(__unix__)
 	/* Decided to not handle the SIGINT edge case, since it's rare and
 	 * the programme exits after catching an interupt. */
+	assert(f.fd >= 0);
 	return close(f.fd);
 #elif defined(_WIN32)
+	assert(f.h != NULL);
 	return -!CloseHandle(f.h);
 #else
 #error "Platform unsupported"
@@ -76,10 +81,12 @@ void *compat_map(struct file f, size_t size, int need_write)
 #if defined(__unix__)
 	/* FIX: It may be required that "size" is a multiple of
 	 * the page size returned by sysconf()*/
+	assert(f.fd >= 0);
 	int map_prot = need_write ? (PROT_READ | PROT_WRITE) : PROT_READ;
 	mcx          = mmap(NULL, size, map_prot, MAP_SHARED, f.fd, 0);
 #elif defined(_WIN32)
 	(void)need_write;
+	assert(f.h != NULL);
 	mcx = malloc(size);
 	if (!mcx) return COMPAT_NOMAP;
 	DWORD n;
@@ -95,12 +102,16 @@ void *compat_map(struct file f, size_t size, int need_write)
 
 int compat_unmap(const struct file f, void *mcx, size_t size)
 {
+	assert(mcx != COMPAT_NOMAP);
+	assert(size > 0);
 #if defined(__unix__)
 	/* FIX: It may be required that "size" is a multiple of
 	 * the page size returned by sysconf(_SC_PAGESIZE)*/
+	assert(f.fd >= 0);
 	(void)f;
 	return munmap(mcx, size);
 #elif defined(_WIN32)
+	assert(f.h != NULL);
 	DWORD n;
 	if (!WriteFile(f.h, mcx, size, &n, NULL) || n != (uintmax_t)size)
 		return -1;
@@ -116,11 +127,14 @@ int compat_unmap(const struct file f, void *mcx, size_t size)
  * growing may result in silent data loss. */
 int compat_truncate(struct file f, off_t size)
 {
+	assert(size >= 0);
 	int e;
 #if defined(__unix__)
+	assert(f.fd >= 0);
 	do e = ftruncate(f.fd, size);
 	while (e < 0 && errno == EINTR); /* e = 0 or -1*/
 #elif defined(_WIN32)
+	assert(f.h != NULL);
 	LARGE_INTEGER slopsize = {.QuadPart = size};
 
 	e = -1;
