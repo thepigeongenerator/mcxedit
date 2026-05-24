@@ -11,6 +11,33 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32)
+#include <errhandlingapi.h>
+#include <windows.h>
+#endif
+
+#if defined(_WIN32)
+static void windows_print_error(void)
+{
+	void *buf;
+	DWORD e = GetLastError();
+	DWORD n = FormatMessageA(
+		FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			FORMAT_MESSAGE_FROM_SYSTEM |
+			FORMAT_MESSAGE_IGNORE_INSERTS,
+		NULL,
+		e,
+		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		(LPSTR)&buf, 0, NULL);
+	if (n != 0) {
+		fputs(buf, stderr);
+		LocalFree(buf);
+	} else {
+		fputc('\n', stderr);
+	}
+}
+#endif
+
 void verr(int code, const char *fmt, va_list args)
 {
 	fprintf(stderr, "%s: ", argv0);
@@ -18,6 +45,12 @@ void verr(int code, const char *fmt, va_list args)
 		vfprintf(stderr, fmt, args);
 		fputs(": ", stderr);
 	}
+#if defined(_WIN32)
+	if (!errno) {
+		windows_print_error();
+		exit(code);
+	}
+#endif
 	fputs(strerror(errno), stderr);
 	fputc('\n', stderr);
 	exit(code);
@@ -38,6 +71,12 @@ void vwarn(const char *fmt, va_list args)
 		vfprintf(stderr, fmt, args);
 		fputs(": ", stderr);
 	}
+#if defined(_WIN32)
+	if (!errno) {
+		windows_print_error();
+		return;
+	}
+#endif
 	fputs(strerror(errno), stderr);
 	fputc('\n', stderr);
 }
