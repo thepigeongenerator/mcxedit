@@ -1,7 +1,5 @@
-# Copyright (C)2026 mcxedit
-# Licensed under GPL-2.0-only. For further information,
-# view `git log`, and the COPYING and CONTRIBUTORS files
-# at www.github.com/thepigeongenerator/mcxedit.
+# SPDX-License-Identifier: GPL-2.0-only
+# SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
 
 VERONLY  = v0.0
 ifndef GIT_TAG

@@ -1,7 +1,6 @@
-/* Copyright (C)2025 mcxedit
- * Licensed under GPL-2.0-only. For further information,
- * view `git log`, and the COPYING and CONTRIBUTORS files
- * at www.github.com/thepigeongenerator/mcxedit. */
+/* SPDX-License-Identifier: GPL-2.0-only
+ * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
+ */
 #ifndef MCXEDIT_CONF_H
 #define MCXEDIT_CONF_H 1
 #include <libmcx/atrb.h>
