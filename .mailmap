@@ -1,7 +1,7 @@
 # Ensures authors (listed with `git shortlog -sne`) show up as one person, rather than multiple.
 # Please keep the entries sorted using `LC_ALL=C sort`
 # Relevant for when people change their e-mail, or their names get mangled for some reason or another.
-Quinn Zieltjens <quinnthepigeon@proton.me> <99677023+thepigeongenerator@users.noreply.github.com>
-Quinn Zieltjens <quinnthepigeon@proton.me> <quinn@thepigeongenerator.xyz>
-Quinn Zieltjens <quinnthepigeon@proton.me> <quinnthepigeon@gmail.com>
-Quinn Zieltjens <quinnthepigeon@proton.me> <quinnthepigeon@proton.me>
+Quinn Zieltjens <zieltjens@pigeonware.org> <99677023+thepigeongenerator@users.noreply.github.com>
+Quinn Zieltjens <zieltjens@pigeonware.org> <quinn@thepigeongenerator.xyz>
+Quinn Zieltjens <zieltjens@pigeonware.org> <quinnthepigeon@gmail.com>
+Quinn Zieltjens <zieltjens@pigeonware.org> <quinnthepigeon@proton.me>
