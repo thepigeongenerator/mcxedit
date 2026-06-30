@@ -37,33 +37,6 @@ static void windows_print_error(void)
 }
 #endif
 
-void verr(int code, const char *fmt, va_list args)
-{
-	int e = errno;
-	fprintf(stderr, "%s: ", argv0);
-	if (fmt) {
-		vfprintf(stderr, fmt, args);
-		fputs(": ", stderr);
-	}
-#if defined(_WIN32)
-	if (!e) {
-		windows_print_error();
-		exit(code);
-	}
-#endif
-	fputs(strerror(e), stderr);
-	fputc('\n', stderr);
-	exit(code);
-}
-
-void verrx(int code, const char *fmt, va_list args)
-{
-	fprintf(stderr, "%s: ", argv0);
-	vfprintf(stderr, fmt, args);
-	fputc('\n', stderr);
-	exit(code);
-}
-
 void vwarn(const char *fmt, va_list args)
 {
 	int e = errno;
@@ -73,13 +46,9 @@ void vwarn(const char *fmt, va_list args)
 		fputs(": ", stderr);
 	}
 #if defined(_WIN32)
-	if (!e) {
-		windows_print_error();
-		return;
-	}
+	if (!e) return windows_print_error();
 #endif
-	fputs(strerror(e), stderr);
-	fputc('\n', stderr);
+	fprintf(stderr, "%s\n", strerror(e));
 }
 
 void vwarnx(const char *fmt, va_list args)
@@ -87,6 +56,18 @@ void vwarnx(const char *fmt, va_list args)
 	fprintf(stderr, "%s: ", argv0);
 	vfprintf(stderr, fmt, args);
 	fputc('\n', stderr);
+}
+
+void verr(int code, const char *fmt, va_list args)
+{
+	vwarn(fmt, args);
+	exit(code);
+}
+
+void verrx(int code, const char *fmt, va_list args)
+{
+	vwarnx(fmt, args);
+	exit(code);
 }
 
 void err(int code, const char *fmt, ...)
