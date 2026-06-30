@@ -39,18 +39,19 @@ static void windows_print_error(void)
 
 void verr(int code, const char *fmt, va_list args)
 {
+	int e = errno;
 	fprintf(stderr, "%s: ", argv0);
 	if (fmt) {
 		vfprintf(stderr, fmt, args);
 		fputs(": ", stderr);
 	}
 #if defined(_WIN32)
-	if (!errno) {
+	if (!e) {
 		windows_print_error();
 		exit(code);
 	}
 #endif
-	fputs(strerror(errno), stderr);
+	fputs(strerror(e), stderr);
 	fputc('\n', stderr);
 	exit(code);
 }
@@ -65,18 +66,19 @@ void verrx(int code, const char *fmt, va_list args)
 
 void vwarn(const char *fmt, va_list args)
 {
+	int e = errno;
 	fprintf(stderr, "%s: ", argv0);
 	if (fmt) {
 		vfprintf(stderr, fmt, args);
 		fputs(": ", stderr);
 	}
 #if defined(_WIN32)
-	if (!errno) {
+	if (!e) {
 		windows_print_error();
 		return;
 	}
 #endif
-	fputs(strerror(errno), stderr);
+	fputs(strerror(e), stderr);
 	fputc('\n', stderr);
 }
 
