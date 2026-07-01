@@ -52,7 +52,7 @@ static int procmcx(const char *pat, int opt)
 
 	int   need_write = opt & OPT_NEED_WRITE;
 	off_t size, nsize, tmp;
-	void *mcx;
+	struct mcx *mcx;
 
 	/* Open the file, get and check the size. */
 	size = compat_open(pat, &f, need_write);
@@ -96,7 +96,7 @@ static int procmcx(const char *pat, int opt)
 
 	if (opt & OPT_REPAIR) {
 		nsize = mcx_repair(mcx, size);
-		if (remap_truncate(f, &mcx, size, nsize, need_write)) {
+		if (remap_truncate(f, (void **)&mcx, size, nsize, need_write)) {
 			warn("cannot truncate '%s'", pat);
 			goto err_unmap;
 		}
@@ -106,7 +106,7 @@ static int procmcx(const char *pat, int opt)
 
 	if (opt & OPT_DEFRAG) {
 		nsize = mcx_defrag(mcx, size);
-		if (remap_truncate(f, &mcx, size, nsize, need_write)) {
+		if (remap_truncate(f, (void **)&mcx, size, nsize, need_write)) {
 			warn("cannot truncate '%s'", pat);
 			goto err_unmap;
 		}

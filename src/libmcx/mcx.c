@@ -10,11 +10,11 @@
 
 #include "endian.h"
 
-off_t mcx_repair(void *mcx, off_t size)
+off_t mcx_repair(struct mcx *mcx, off_t size)
 {
 	assert(size > MCX_TABLES);
-	be32 *tbl = mcx;
-	be32 *end = mcx + MCX_TABLE;
+	be32 *tbl = mcx->table;
+	be32 *end = tbl + MCX_TABLE;
 	u32   chpos, chlen, chend;
 	u32   max = 0, tmp;
 	do {
@@ -48,12 +48,12 @@ static int mcx_defrag_compar(const void *ma, const void *mb)
 
 /* Sort the table based on offset,
  * Then move the chunks down into empty space. */
-off_t mcx_defrag(void *mcx, off_t size)
+off_t mcx_defrag(struct mcx *mcx, off_t size)
 {
 	assert(size > MCX_TABLES);
 	u32   chunks[MCX_TABLE_LEN * 2];
 	u32  *chunk = chunks;
-	be32 *tbl   = mcx;
+	be32 *tbl   = mcx->table;
 	for (int i = 0; i < MCX_TABLE_LEN; ++i) {
 		*chunk++ = cvt_be32toh(tbl[i]);
 		*chunk++ = i;
@@ -90,9 +90,9 @@ next_table_item:
 	return pos * MCX_SECTOR;
 }
 
-off_t mcx_calcsize(const void *mcx)
+off_t mcx_calcsize(const struct mcx *mcx)
 {
-	const be32 *tbl = mcx;
+	const be32 *tbl = mcx->table;
 	const be32 *end = tbl + MCX_TABLE_LEN;
 	u32         max = 0, tmp;
 	do {
@@ -102,9 +102,9 @@ off_t mcx_calcsize(const void *mcx)
 	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR;
 }
 
-off_t mcx_sumsize(const void *mcx)
+off_t mcx_sumsize(const struct mcx *mcx)
 {
-	const be32 *tbl = mcx;
+	const be32 *tbl = mcx->table;
 	const be32 *end = tbl + MCX_TABLE_LEN;
 
 	off_t sum = 0;
