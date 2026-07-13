@@ -69,7 +69,7 @@ static int procmcx(const char *pat, int opt)
 	tmp = size % MCX_SECTOR;
 	if (tmp && !(opt & OPT_QUIET || opt & OPT_CHECK)) {
 		warnx("'%s' may be corrupt: Not 4KiB sector aligned! (%+lldB)",
-			pat, (intmax_t)-tmp);
+			pat, (llong)-tmp);
 	}
 	if ((uintmax_t)size > SIZE_MAX) {
 		warnx("cannot use '%s': File is too large for the size_t datatype", pat);
