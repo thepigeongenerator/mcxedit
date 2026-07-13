@@ -27,8 +27,23 @@ export srcdir ?= ${CURDIR}
 CPPFLAGS := -DNDEBUG -U_GNU_SOURCE ${CPPFLAGS}\
 	    -DMCXEDIT_VERSION=\"${VERSION}\" -DMCXEDIT_SOURCE\
 	    -I${srcdir}/include
-CFLAGS   := -O2 ${CFLAGS} -g -std=gnu17\
-	    -Wall -Wextra -Wpedantic -Wno-pointer-arith -Wvla
+CFLAGS   := -O2 ${CFLAGS} -g -std=gnu17
+CFLAGS   += -funsigned-char
+CFLAGS   += -fno-strict-overflow         # Signed arithmetic overflow is allowed.
+CFLAGS   += -Wall -Wextra -Wpedantic     # Standard Warnings
+CFLAGS   += -Wmissing-declarations
+CFLAGS   += -Wmissing-prototypes
+CFLAGS   += -Wvla                        # Kills the stack
+CFLAGS   += -Werror=date-time            # Prevents reproducible binaries
+CFLAGS   += -Werror=designated-init      # The attribute must be respected.
+CFLAGS   += -Werror=return-type
+CFLAGS   += -Werror=strict-prototypes    # Arguments must have a type.
+CFLAGS   += -Wno-pointer-arith           # void* arithmetic.
+CFLAGS   += -Wno-pointer-sign            # s32* can be implicitly cast to u32*.
+CFLAGS   += -Wno-switch                  # switch needn't have all enum definitions.
+CFLAGS   += -Wno-unused-but-set-variable # Preprocessor may mask variable usage.
+CFLAGS   += -Wno-unused-const-variable   # Same as above.
+CFLAGS   += -Wno-unused-parameter        # May not be used and see above.
 LDFLAGS  := ${LDFLAGS} -L${srcdir}
 
 # Rules so simple that it is fine to put them here.
