@@ -3,214 +3,140 @@
  */
 #include <libmcx/nbt.h>
 
+#include "endian.h"
 #include <assert.h>
+#include <errno.h>
 #include <libmcx/types.h>
 #include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
+#include <sys/types.h>
 
-#include "endian.h"
-
-#define MAX_DEPTH 512
-
-/* Extracts a big endian 16 bit integer from address `buf`, converts it to host byte size if needed and returns. */
-static inline u16 buftoh16(const void *restrict buf)
+static ssize_t nbt_primitive_size(u8 id)
 {
-	be16 i;
-	memcpy(&i, buf, sizeof(i));
-	return cvt_be16toh(i);
+	if (id == NBT_END) return 0;
+	if (id <= NBT_S64) return 1 << --id;
+	if (id <= NBT_F64) return 1 << (id - 3);
+	return -1;
 }
 
-/* Extracts a big endian 32 bit integer from address `buf`, converts it to host byte size if needed and returns. */
-static inline u32 buftoh32(const void *restrict buf)
+ssize_t nbt_taglen(const u8 *restrict tag, int root, u8 *restrict tagcache)
 {
-	be32 i;
-	memcpy(&i, buf, sizeof(i));
-	return cvt_be32toh(i);
-}
-
-/* Extracts a big endian 64 bit integer from address `buf`, converts it to host byte size if needed and returns. */
-static inline u64 buftoh64(const void *restrict buf)
-{
-	be64 i;
-	memcpy(&i, buf, sizeof(i));
-	return cvt_be64toh(i);
-}
-
-/* Processes the incoming array data in `buf`. Which contains `nmem` items of `size`.
- * The data shall be converted to little-endian on little-endian systems
- * Outputs the allocated data to `out`, returns where the next pointer would be. */
-static const u8 *procarr(const u8 *restrict buf, s32 nmemb, uint size, struct nbt_array *restrict out)
-{
-	size_t len = nmemb * size;
-	void  *dat = malloc(len);
-	*out       = (struct nbt_array){len, {dat}};
-	if (!dat) // BUG: no error handling?
-		return buf + len;
-
-	memcpy(dat, buf, len);
-	buf += len;
-
-	/* Only include this code for little-endian systems. Since only they require this logic.
-	 * Producing optimised code for other platforms. */
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-	if (size == 1)
-		return buf;
-	s32 i = 0;
-	while (i < nmemb) {
-		switch (size) {
-		case 2:  out->arr.dat16[i] = cvt_be16toh(((be16 *)dat)[i]); break;
-		case 4:  out->arr.dat32[i] = cvt_be32toh(((be32 *)dat)[i]); break;
-		case 8:  out->arr.dat64[i] = cvt_be64toh(((be64 *)dat)[i]); break;
-		default: __builtin_unreachable(); // this should be impossible
-		}
-		i += size;
-	}
-#endif
-	return buf;
-}
-
-/* calls `procarr` for the simple types available. */
-static const u8 *proclist(const u8 *restrict buf, struct nbt_array *restrict out)
-{
-	uint size;
-
-	switch (*(u8 *)buf) {
-	case NBT_I8:  size = 1; break;
-	case NBT_I16: size = 2; break;
-	case NBT_I32: // fall through
-	case NBT_F32: size = 4; break;
-	case NBT_I64: // fall though
-	case NBT_F64: size = 8; break;
-	default:      return NULL;
-	}
-
-	buf++;
-	be32 tmp;
-	memcpy(&tmp, buf, 4);
-	s32 len = cvt_be32toh(tmp);
-	buf += 4;
-	return procarr(buf, len, size, out);
-}
-
-const u8 *nbt_proctag(const u8 *restrict buf, u16 slen, void *restrict out)
-{
-	const u8 *ptr, *tmp;
-	ptr = buf + 3 + slen;
-
-	s32  nmem;
-	uint size;
-
-	switch (*buf) {
-	case NBT_I8:  *(u8 *)out = *ptr; return ptr + 1;
-	case NBT_I16: *(u16 *)out = buftoh16(ptr); return ptr + 2;
-	case NBT_I32: // fall through
-	case NBT_F32: *(u32 *)out = buftoh32(ptr); return ptr + 4;
-	case NBT_I64: // fall through
-	case NBT_F64: *(u64 *)out = buftoh64(ptr); return ptr + 8;
-
-	case NBT_STR:     nmem = buftoh16(ptr), size = 1, ptr += 2; break;
-	case NBT_ARR_I8:  nmem = buftoh32(ptr), size = 1, ptr += 4; break;
-	case NBT_ARR_I32: nmem = buftoh32(ptr), size = 4, ptr += 4; break;
-	case NBT_ARR_I64: nmem = buftoh32(ptr), size = 8, ptr += 4; break;
-
-	case NBT_LIST:
-		return proclist(ptr, (struct nbt_array *)out);
-		return tmp;
-
-	default: return NULL;
-	}
-
-	return procarr(ptr, nmem, size, (struct nbt_array *)out);
-}
-
-
-/* handles incrementing to the next tag in the case of `NBT_LIST`. This function shan't return `NULL`.
- * `ptr` is assumed to be the start of the `NBT_LIST` data, e.i. The list's ID, followed by the list's length.
- * If `ID` is `NBT_I8`, `NBT_I16`, `NBT_I32`, `NBT_I64`, `NBT_F32`, or `NBT_F64`, the entire list length is computed and returned.
- * For other types this won't be possible, and thus will add `1` to `dpt`, and write the list data to `lens` and `tags` at this new `dpt`. */
-static const u8 *nexttag_list(const u8 *restrict ptr, uint *restrict const dpt, s32 *restrict const lens, u8 *restrict const tags)
-{
-	const u8 *tag = ptr;
-	ptr++;
-	switch (*tag) {
-	case NBT_END: break;
-	case NBT_I8:  ptr += (s32)buftoh32(ptr) * 1; break;
-	case NBT_I16: ptr += (s32)buftoh32(ptr) * 2; break;
-	case NBT_I32: // fall through
-	case NBT_F32: ptr += (s32)buftoh32(ptr) * 4; break;
-	case NBT_I64: // fall through
-	case NBT_F64: ptr += (s32)buftoh32(ptr) * 8; break;
-	default:
-		// TODO: handle out of bounds... Might not be required if we use flexible array member
-		(*dpt)++;
-		tags[*dpt] = *tag;
-		lens[*dpt] = (s32)buftoh32(ptr);
-		break;
-	}
-	ptr += 4;
-	return ptr;
-}
-
-/* increments to the next tag and returns it (or `NULL`)
- * - `tag` represents the start of the tag, e.i. The tag ID, or in the case of `NBT_LIST` data, the start of this data.
- * - `dpt` shall point to the "depth" we're at, this is used as index for `lens` and `tags`
- * - `lens` shall contain `MAX_DEPTH` of items representing the list length, if the current item is non-zero we shall assume we're in a list.
- *     Where the value is decremented until we reach `0`.
- * - `tags` shall contain `MAX_DEPTH` of items representing the list's stored type. */
-static const u8 *nexttag(const u8 *restrict tag, uint *restrict const dpt, s32 *restrict const lens, u8 *restrict const tags)
-{
-	u8        type;
-	const u8 *ptr = tag;
-	if (lens[*dpt]) {
-		type = tags[*dpt];
-		lens[*dpt]--;
-		*dpt -= !lens[*dpt];
-	} else {
-		type = *tag;
-		ptr += buftoh16(tag + 1) + 3;
-	}
-
-	switch (type) {
-	case NBT_I8:  ptr += 1; break;
-	case NBT_I16: ptr += 2; break;
-	case NBT_I32: // fall through
-	case NBT_F32: ptr += 4; break;
-	case NBT_I64: // fall through
-	case NBT_F64: ptr += 8; break;
-
-	case NBT_ARR_I8:  ptr += 4 + (s32)buftoh32(ptr) * 1; break;
-	case NBT_ARR_I32: ptr += 4 + (s32)buftoh32(ptr) * 4; break;
-	case NBT_ARR_I64: ptr += 4 + (s32)buftoh32(ptr) * 8; break;
-	case NBT_STR:     ptr += 2 + (u16)buftoh16(ptr) * 1; break;
-
-	case NBT_END:      (*dpt)--; break;
-	case NBT_COMPOUND: (*dpt)++; break;
-
-	case NBT_LIST: ptr = nexttag_list(ptr, dpt, lens, tags); break;
-
-	default: return NULL; // unexpected value; buffer is likely corrupt
-	}
-
-	return ptr;
-}
-
-/* TODO: write test cases for this function:
- * - list:compound...
- * - non-existent type
- * - compound:list:int32
- * - string
- */
-const u8 *nbt_nexttag(const u8 *restrict buf)
-{
-	const u8 *tag;
-	u8        tags[MAX_DEPTH] = {0};
-	s32       lens[MAX_DEPTH] = {0};
-	uint      dpt             = 0;
-
-	tag = buf;
+	assert(root < NBT_NEST_MAX);
+	tagcache += root;
+	int depth = root;
+	u8 id;
+	const u8 *tmp = tag;
 	do {
-		tag = nexttag(tag, &dpt, lens, tags);
-	} while (tag && dpt > 0);
-	return tag;
+		/* Because it is a recursive algorithm,
+		 * we must keep track of the tags in a cache. */
+		if (!depth || tagcache[-1] != NBT_LIST) {
+			id = *tmp++;
+
+			if (id == NBT_END) {
+				if (depth != root) {
+					depth--;
+					tagcache--;
+				}
+				continue;
+			}
+
+			/* Skip the tag name. */
+			tmp += loadbe16(tmp) + 2;
+
+			ssize_t size = nbt_primitive_size(id);
+			if (size >= 0) {
+				tmp += size;
+				continue;
+			}
+		} else {
+			/* Lists are a bitch to parse. */
+			id = *tagcache;
+		}
+
+		if (id == NBT_ARR_S8) {
+			s32 n = loadbe32(tmp);
+			if (n < 0) return -ENBT_IND;
+			tmp += n + 4;
+		}
+
+		if (id == NBT_STR) {
+			tmp += loadbe16(tmp) + 2;
+		}
+
+		if (id == NBT_LIST) {
+			*tagcache = id;
+			/* WARN: May want to increment and check here.
+			 * Since we'd skip the limit if it's a primitive.
+			 * Then again, it wouldn't cause much issue. */
+			id = *tmp++;
+			s32 n = loadbe32(tmp);
+			if (n < 0) return -ENBT_IND;
+			tmp += 4;
+
+			/* NOTE: TAG_END is allowed, but has a size of 0. */
+			ssize_t size = nbt_primitive_size(id);
+			if (size >= 0) {
+				size *= n;
+				tmp  += size;
+				continue;
+			}
+
+			depth++;
+			tagcache++;
+			if (depth >= NBT_NEST_MAX)
+				return -ENBT_DEPTH;
+			*tagcache = id;
+			continue;
+		}
+		if (id == NBT_COMPOUND) {
+			*tagcache = id;
+			depth++;
+			tagcache++;
+			if (depth >= NBT_NEST_MAX)
+				return -ENBT_DEPTH;
+			continue;
+		}
+
+		if (id <= NBT_ARR_S64) {
+			size_t size = (id == NBT_ARR_S32) ? 4 : 8;
+			s32 n = loadbe32(tmp);
+			if (n < 0) return -ENBT_IND;
+			tmp += size * n + 5;
+			continue;
+		}
+		return -ENBT_TAG;
+	} while (depth != root);
+	return tmp - tag;
+}
+
+int nbt_tagnamecmp(const u8 *tag, const char *str)
+{
+	u16 n = loadbe16(++tag);
+	tag += 2;
+	int v;
+
+	if (!n) return !!*str;
+	while (n-- && *str && !(v = *str++ - *tag++));
+	return v;
+}
+
+char *nbt_popnode(char *path)
+{
+	char c;
+	do c = *path++;
+	while (c && c != '.');
+	path[-1] = '\0';
+	return c ? path : NULL;
+}
+
+static const char *errors[ENBT_DEPTH+1] = {
+	[0]          = "Success",
+	[ENBT_TAG]   = "Invalid tag",
+	[ENBT_IND]   = "Invalid index",
+	[ENBT_DEPTH] = "Too many nested lists and compound tags",
+};
+const char *nbt_errstr(int code)
+{
+	if (code < 0 || code > ENBT_DEPTH)
+		return NULL;
+	return errors[code];
 }

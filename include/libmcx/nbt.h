@@ -1,67 +1,54 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
+#include "libmcx/atrb.h"
 #ifndef MCXEDIT_NBT_H
 #define MCXEDIT_NBT_H 1
-
-#include <assert.h>
-#include <libmcx/atrb.h>
 #include <libmcx/types.h>
-#include <stdbool.h>
-#include <stdlib.h>
+#include <stdint.h>
+#include <sys/types.h>
 
-/* NBT (named binary tag) is a tree data structure. Tags have a numeric type ID, name and a payload.
- * NBT files are a compressed `compound` tag. GZip is the compression used in most cases,
- * in some (rare) cases it's stored uncompressed.
- * A tag is an individual part of the data tree.
- * The first byte is the ID, followed by a `u16`, for the length of the name.
- * Then the name as `UTF-8`. (end tag does not contain name) */
+#define NBT_NEST_MAX 512
 
-
-/* specifies the NBT tag IDs.
- * NOTE: every type is stored as BE (big-endian) in the file. */
+/* https://minecraft.wiki/w/NBT_format#Binary_format */
 enum nbt_tagid {
-	NBT_END      = 0x00, // signifies the end of a compound tag
-	NBT_I8       = 0x01, // next byte is for an 8 bit signed integer.
-	NBT_I16      = 0x02, // next 2 bytes are for a 16 bit signed integer
-	NBT_I32      = 0x03, // next 4 bytes are for a 32 bit signed integer
-	NBT_I64      = 0x04, // next 8 bytes are for a 64 bit signed integer
-	NBT_F32      = 0x05, // next 4 bytes are for a single-precision floating-point
-	NBT_F64      = 0x06, // next 8 bytes are for a double-precision floating-point
-	NBT_ARR_I8   = 0x07, // starts with a i32, denoting size, followed by the i8 data
-	NBT_STR      = 0x08, // starts with a u16, denoting size, followed by the UTF-8 data
-	NBT_LIST     = 0x09, // starts with an ID, followed by a 32 bit signed integer denoting the size
-	NBT_COMPOUND = 0x0A, // compound tag, contains tags and is delimited by `NBT_END`
-	NBT_ARR_I32  = 0x0B, // starts with a i32, denoting size, followed by the i32 data
-	NBT_ARR_I64  = 0x0C, // starts with a i32, denoting size, followed by the u32 data
+	NBT_END      = 0x00,
+	NBT_S8       = 0x01,
+	NBT_S16      = 0x02,
+	NBT_S32      = 0x03,
+	NBT_S64      = 0x04,
+	NBT_F32      = 0x05,
+	NBT_F64      = 0x06,
+	NBT_ARR_S8   = 0x07,
+	NBT_STR      = 0x08,
+	NBT_LIST     = 0x09,
+	NBT_COMPOUND = 0x0A,
+	NBT_ARR_S32  = 0x0B,
+	NBT_ARR_S64  = 0x0C,
 };
 
+/* Returns the tag length.
+ * "tag"  has to be a fully-fledged tag. It cannot reside within a list.
+ * "root" must be <NBT_NEST_MAX, and will be the current depth.
+ * "tagcache" points to a list of tags, where everything >root may be written.
+ * <root won't be touched.
+ * Returns the size in bytes of the current tag, or <0 for an error.
+ * Negating this error value will yield a valid value for nbt_errstr. */
+ssize_t nbt_taglen(const mcx_u8 *restrict tag, int root, mcx_u8 *restrict tagcache);
 
-struct nbt_array {
-	mcx_s32 nmemb;
+/* Compares the name of the fully-fledged tag
+ * against a NUL-terminated string.
+ * Returns 0 if both are equal. */
+int nbt_tagnamecmp(const u8 *tag, const char *str);
 
-	/* Contains the data of the NBT array,
-	 * Since this is a user-facing structure, it must point
-	 * to host-endian data, not big endian, and thus is marked as such. */
-	union nbt_array_dat {
-		mcx_u16 *dat16;
-		mcx_u32 *dat32;
-		mcx_u64 *dat64;
-	} arr;
-};
+/* Destructively formats a dot-seperated path to be NUL-seperated.
+ * Returns the pointer to the next node,
+ * or NULL if the end of the path was reached. */
+char *nbt_popnode(char *path);
 
-
-/* Acquires the data contained by the named tag.
- * - `buf` points to the start of the tag.
- * - `slen` contains the string length of the name.
- * - `out` points to where the data should be written.
- * if `buf` points to `NBT_I8`, `NBT_I16`, `NBT_I32`, `NBT_I64`, `NBT_F32`, or `NBT_F64`, `*out` is assumed
- * to have the available byte width for one of these types. In the case of `NBT_ARR*` and `NBT_LIST`
- * it must point to a `struct nbt_array*`. Where in the case of `NBT_LIST`, it must be one of the previous static-width types. */
-const mcx_u8 *nbt_proctag(const mcx_u8 *restrict buf, mcx_u16 slen, void *restrict out) NONNULL((1, 3));
-
-/* searches for the end of a named tag without processing data, the final pointer is returned.
- * `NULL` is returned upon failure, the otherwise returned pointer is not guaranteed to be valid. */
-const mcx_u8 *nbt_nexttag(const mcx_u8 *restrict buf) NONNULL((1)) PURE;
+#define ENBT_TAG   1
+#define ENBT_IND   2
+#define ENBT_DEPTH 3
+const char *nbt_errstr(int code) CONST COLD;
 
 #endif /* MCXEDIT_NBT_H */

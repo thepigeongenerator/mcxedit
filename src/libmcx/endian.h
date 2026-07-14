@@ -4,6 +4,7 @@
 #ifndef MCXEDIT_ENDIAN_H
 #define MCXEDIT_ENDIAN_H 1
 
+#include <libmcx/atrb.h>
 #include <libmcx/types.h>
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
@@ -35,5 +36,14 @@
 #else
 #error "Machine architecture unsupported! Expected either big-endian or little-endian."
 #endif
+
+/* Loads a 16-bit big-endian integer from an unaligned buffer. */
+mcx_u16 loadbe16(const u8 *buf) PURE;
+
+/* Loads a 32-bit big-endian integer from an unaligned buffer. */
+mcx_u32 loadbe32(const u8 *buf) PURE;
+
+/* Loads a 64-bit big-endian integer from an unaligned buffer. */
+mcx_u64 loadbe64(const u8 *buf) PURE;
 
 #endif /* MCXEDIT_ENDIAN_H */
