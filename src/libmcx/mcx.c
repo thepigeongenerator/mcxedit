@@ -104,13 +104,13 @@ off_t mcx_calcsize(const struct mcx *mcx)
 
 off_t mcx_sumsize(const struct mcx *mcx)
 {
-	const be32 *tbl = mcx->table;
-	const be32 *end = tbl + MCX_TABLE_LEN;
+	const u8 *ptr = (const u8 *)mcx->table + 3;
+	size_t n = MCX_TABLE;
 
 	off_t sum = 0;
 	do {
-		const u8 *m = (const u8 *)tbl;
-		sum += m[3];
-	} while (++tbl < end);
+		sum += *ptr;
+		ptr += 4;
+	} while(--n);
 	return sum * MCX_SECTOR + MCX_TABLES;
 }
