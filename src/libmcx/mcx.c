@@ -12,6 +12,7 @@
 
 off_t mcx_repair(struct mcx *mcx, off_t size)
 {
+	assert(!((uintptr_t)mcx & 3));
 	assert(size > MCX_TABLES);
 	be32 *tbl = mcx->table;
 	be32 *end = tbl + MCX_TABLE;
@@ -50,6 +51,7 @@ static int mcx_defrag_compar(const void *ma, const void *mb)
  * Then move the chunks down into empty space. */
 off_t mcx_defrag(struct mcx *mcx, off_t size)
 {
+	assert(!((uintptr_t)mcx & 3));
 	assert(size > MCX_TABLES);
 	u32   chunks[MCX_TABLE_LEN * 2];
 	u32  *chunk = chunks;
@@ -92,6 +94,7 @@ next_table_item:
 
 off_t mcx_calcsize(const struct mcx *mcx)
 {
+	assert(!((uintptr_t)mcx & 3));
 	const be32 *tbl = mcx->table;
 	const be32 *end = tbl + MCX_TABLE_LEN;
 	u32         max = 0, tmp;
