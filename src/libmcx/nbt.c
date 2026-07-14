@@ -18,7 +18,14 @@ static ssize_t nbt_primitive_size(u8 id)
 	return -1;
 }
 
-ssize_t nbt_taglen(const u8 *restrict tag, int root, u8 *restrict tagcache)
+/* TODO: Should really use my unit test thing for this.
+ * Test cases:
+ *  - List as root
+ *  - List of Lists
+ *  - List of Compounds
+ */
+ssize_t nbt_taglen(const u8 *restrict tag, int root,
+	u8 *restrict tagcache, s32 *lencache)
 {
 	assert(root < NBT_NEST_MAX);
 	tagcache += root;
@@ -31,13 +38,8 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root, u8 *restrict tagcache)
 		if (!depth || tagcache[-1] != NBT_LIST) {
 			id = *tmp++;
 
-			if (id == NBT_END) {
-				if (depth != root) {
-					depth--;
-					tagcache--;
-				}
-				continue;
-			}
+			if (id == NBT_END)
+				goto depth_decrease;
 
 			/* Skip the tag name. */
 			tmp += loadbe16(tmp) + 2;
@@ -49,6 +51,8 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root, u8 *restrict tagcache)
 			}
 		} else {
 			/* Lists are a bitch to parse. */
+			if (lencache[-1]-- == 0)
+				goto depth_decrease;
 			id = *tagcache;
 		}
 
@@ -79,22 +83,11 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root, u8 *restrict tagcache)
 				tmp  += size;
 				continue;
 			}
-
-			depth++;
-			tagcache++;
-			if (depth >= NBT_NEST_MAX)
-				return -ENBT_DEPTH;
-			*tagcache = id;
-			continue;
+			*lencache = n;
+			goto depth_increase;
 		}
-		if (id == NBT_COMPOUND) {
-			*tagcache = id;
-			depth++;
-			tagcache++;
-			if (depth >= NBT_NEST_MAX)
-				return -ENBT_DEPTH;
-			continue;
-		}
+		if (id == NBT_COMPOUND)
+			goto depth_increase;
 
 		if (id <= NBT_ARR_S64) {
 			size_t size = (id == NBT_ARR_S32) ? 4 : 8;
@@ -104,6 +97,21 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root, u8 *restrict tagcache)
 			continue;
 		}
 		return -ENBT_TAG;
+depth_increase:
+		depth++;
+		tagcache++;
+		lencache++;
+		if (depth >= NBT_NEST_MAX)
+			return -ENBT_DEPTH;
+		/* This is safe for compound tags, even though it isn't used.
+		 * It mainly simplifies the code branches. */
+		*tagcache = id;
+		continue;
+depth_decrease:
+		if (depth == root) break;
+		depth--;
+		tagcache--;
+		lencache--;
 	} while (depth != root);
 	return tmp - tag;
 }

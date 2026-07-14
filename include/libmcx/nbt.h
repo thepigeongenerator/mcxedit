@@ -31,10 +31,11 @@ enum nbt_tagid {
  * "tag"  has to be a fully-fledged tag. It cannot reside within a list.
  * "root" must be <NBT_NEST_MAX, and will be the current depth.
  * "tagcache" points to a list of tags, where everything >root may be written.
- * <root won't be touched.
+ * <root won't be touched. Same goes for "lencache".
  * Returns the size in bytes of the current tag, or <0 for an error.
  * Negating this error value will yield a valid value for nbt_errstr. */
-ssize_t nbt_taglen(const mcx_u8 *restrict tag, int root, mcx_u8 *restrict tagcache);
+ssize_t nbt_taglen(const u8 *restrict tag, int root,
+	u8 *restrict tagcache, s32 *lencache);
 
 /* Compares the name of the fully-fledged tag
  * against a NUL-terminated string.
