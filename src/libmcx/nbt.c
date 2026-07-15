@@ -60,10 +60,12 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 			s32 n = loadbe32(tmp);
 			if (n < 0) return -ENBT_IND;
 			tmp += n + 4;
+			continue;
 		}
 
 		if (id == NBT_STR) {
 			tmp += loadbe16(tmp) + 2;
+			continue;
 		}
 
 		if (id == NBT_LIST) {
