@@ -1,44 +1,48 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
-SHELL = /bin/sh
-.SUFFIXES:
-.SECONDARY:
-
-SRC  := $(wildcard *.c)
-OBJ  := $(addsuffix .o,${SRC})
-DEP  := $(addsuffix .d,${SRC})
-
 include ../../Common.mk
+override M-CFLAGS = -flto
+override LDFLAGS += -flto -O2
+override LDLIBS  += -lmcx
 
-ifneq (${OS},Windows_NT)
-../../mcxedit: ${OBJ}
-	$(call msg,LD,$(notdir $@))
-	${Q}${CC} ${LDFLAGS} ${LDLIBS} -lmcx -o $@ $^
-../../mcxedit.static: ${OBJ} ${srcdir}/libmcx.a
-	$(call msg,LD,$(notdir $@))
-	${Q}${CC} ${LDFLAGS} ${LDLIBS} -static -o $@ $^
+src  := $(wildcard *.c)
+obj  := $(addsuffix .o,${src})
+dep  := $(addsuffix .d,${src})
+
+ifeq (${OS},Windows_NT)
+all: mcxedit.exe
 else
-../../mcxedit.exe:    ${OBJ} ${srcdir}/libmcx.a
-	$(call msg,LD,$(notdir $@))
-	${Q}${CC} ${LDFLAGS} ${LDLIBS} -static -o $@ $^
+all: mcxedit
 endif
 
-%.c.o: %.c
-	$(call msg,CC,src/mcxedit/$@)
-	${Q}${CC} -c ${CPPFLAGS} ${CFLAGS} -o $@ $<
+mcxedit.a: ${obj}
+	@${msg} AR $@
+	$Q${AR} ${ARFLAGS} -sc $@ $^
+mcxedit mcxedit.exe: mcxedit.a
+	@${msg} LD $@
+	$Q${CC} ${LDFLAGS} ${LDLIBS} -o $@ $^
+mcxedit.static mcxedit.static.exe: mcxedit.a
+	@${msg} LD $@
+	$Q${CC} ${LDFLAGS} -static ${LDLIBS} -o $@ $^
 
-mcxedit:        ../../mcxedit
-mcxedit.static: ../../mcxedit.static
-mcxedit.exe:    ../../mcxedit.exe
-PHONY += libmcx.a libmcx.so libmcx.dll
+clean:; $Q${RM} mcxedit.a \
+	mcxedit mcxedit.exe\
+	mcxedit.static mcxedit.static.exe\
+	${obj}
 
-clean:
-	$(call msg,CLEAN,src/mcxedit)
-	${Q}${RM} ${OBJ}
-	${Q}${RM} ${DEP}
-	${Q}${RM} ../../mcxedit ../../mcxedit.static ../../mcxedit.exe
-PHONY += clean
-check:; ${Q}sparse ${CPPFLAGS} ${CFLAGS} ${SRC}
-PHONY += check
+ifeq (${OS},Windows_NT)
+# TODO: Windows installation
+install: mcxedit.exe
+	$(error Windows install unsupported at this time.)
+uninstall:
+	$(error Windows uninstall unsupported at this time.)
+else
+install: mcxedit
+	$Q${INSTALL_EXEC} $< ${DESTDIR}${bindir}/$<
+uninstall:
+	$Q${RM} ${DESTDIR}${bindir}/$<
+endif
 
-.PHONY: ${PHONY}
+.PHONY: all clean install uninstall
+
+include ${dep}

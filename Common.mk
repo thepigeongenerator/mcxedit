@@ -1,73 +1,97 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
+.POSIX:         # Provides well-defined defaults
+.SUFFIXES:
+.SECONDARY:     # Don't clean up intermediary files
+SHELL = /bin/sh
 
 VERONLY  = v0.0
-ifndef GIT_TAG
+ifndef VERSION
 GIT_TAG := $(shell git describe --tags --match=${VERONLY} 2>/dev/null)
-endif
 VERSION := $(if ${GIT_TAG},${GIT_TAG},${VERONLY})
-export VERSION GIT_TAG
+export VERSION
+endif
 
+modules = mcxedit libmcx
 
-# Configure the prefix directories for installation rules.
-prefix = /usr/local
-bindir = ${prefix}/bin
-libdir = ${prefix}/lib
-mandir = ${prefix}/share
+srcdir  ?= ${CURDIR}
+prefix   = /usr/local
+bindir   = ${prefix}/bin
+libdir   = ${prefix}/lib
+sharedir = ${prefix}/share
+mandir   = ${sharedir}/man
+man0dir  = ${mandir}/man0
+man1dir  = ${mandir}/man1
+man2dir  = ${mandir}/man2
+man3dir  = ${mandir}/man3
+man4dir  = ${mandir}/man4
+man5dir  = ${mandir}/man5
+man6dir  = ${mandir}/man6
+man7dir  = ${mandir}/man7
+man8dir  = ${mandir}/man8
+man9dir  = ${mandir}/man9
+export srcdir
 
-# srcdir shall be set by the first make, and no subsequent makes.
-export srcdir ?= ${CURDIR}
+AR   = ar
+CC   = cc
+RM   = rm -vf
+GZIP = gzip
+INSTALL      = install -vD -m0644
+INSTALL_EXEC = install -vD -m755
 
-# Include persistent user configurations.
+# Flags that may be overridden by the command-line
+CPPFLAGS = -DNDEBUG
+CFLAGS    = -O2 -g
+LDFLAGS   =
+LDLIBS    =
+
+# Alternative method of inserting custom configurations.
+# Mostly useful for development where you'd otherwise have to re-type the same
+# flags over and over again.
 -include ${srcdir}/.config.mk
 
-# Flags, including the flag in the definition so it may be overridden.
-# Generally speaking, anything prior to the recursive reference of the variable
-# is able to be overridden, anything afterwards is applied no matter what.
-CPPFLAGS := -DNDEBUG -U_GNU_SOURCE ${CPPFLAGS}\
+# Flags that may not be overridden by the command-line
+override\
+CPPFLAGS += -U_GNU_SOURCE\
 	    -DMCXEDIT_VERSION=\"${VERSION}\" -DMCXEDIT_SOURCE\
 	    -I${srcdir}/include
-CFLAGS   := -O2 ${CFLAGS} -g -std=gnu17
-CFLAGS   += -funsigned-char
-CFLAGS   += -fno-strict-overflow         # Signed arithmetic overflow is allowed.
-CFLAGS   += -Wall -Wextra -Wpedantic     # Standard Warnings
-CFLAGS   += -Wmissing-declarations
-CFLAGS   += -Wmissing-prototypes
-CFLAGS   += -Wvla                        # Kills the stack
-CFLAGS   += -Werror=date-time            # Prevents reproducible binaries
-CFLAGS   += -Werror=designated-init      # The attribute must be respected.
-CFLAGS   += -Werror=return-type
-CFLAGS   += -Werror=strict-prototypes    # Arguments must have a type.
-CFLAGS   += -Wno-pointer-arith           # void* arithmetic.
-CFLAGS   += -Wno-pointer-sign            # s32* can be implicitly cast to u32*.
-CFLAGS   += -Wno-switch                  # switch needn't have all enum definitions.
-CFLAGS   += -Wno-unused-but-set-variable # Preprocessor may mask variable usage.
-CFLAGS   += -Wno-unused-const-variable   # Same as above.
-CFLAGS   += -Wno-unused-parameter        # May not be used and see above.
-LDFLAGS  := ${LDFLAGS} -L${srcdir}
+override\
+CFLAGS   += -std=gnu17\
+	    -funsigned-char -fno-strict-overflow\
+	    -Wall -Wextra -Wpedantic\
+	    -Wmissing-declarations -Wmissing-prototypes -Wundef -Wvla\
+	    -Werror=date-time -Werror=designated-init -Werror=return-type\
+	    -Werror=strict-prototypes\
+	    -Wno-pointer-arith -Wno-pointer-sign -Wno-switch\
+	    -Wno-unused-but-set-variable -Wno-unused-const-variable\
+	    -Wno-unused-parameter
+override\
+LDFLAGS  += $(foreach mod,${modules},-L${srcdir}/src/${mod})
 
-# Rules so simple that it is fine to put them here.
-# Not putting stuff such as C compilation here, since that should
-# be handled by the module itself.
-%.gz: %
-	$(call msg,GZIP,$@)
-	${Q}gzip -fk $<
-%/:
-	$(call msg,MKDIR,$@)
-	${Q}mkdir -p $@
+MAKEFLAGS += -rR
+ARFLAGS    = -r
 
 # Set Q to @ to silence commands being printed, unless --no-silent has been set
 ifeq (0, $(words $(findstring --no-silent,${MAKEFLAGS})))
-msg=@printf ' %-8s %s\n' "${1}" "${2}"
+MAKEFLAGS += --no-print-directory
+msg=printf ' %-8s %s\n'
 Q=@
 else
-msg=
+msg=true
 Q=
 endif
 
-# Generate and include dependencies,
-# ignoring any errors that may occur when doing so.
-%.c.d: %.c; ${Q}${CC} -MM ${CPPFLAGS} -MF $@ $<
-ifeq (0, $(words $(findstring ${MAKECMDGOALS}, clean)))
--include ${DEP}
-endif
+# Rule Definitions
+%.c.o: %.c
+	@${msg} CC $@
+	$Q${CC} -c ${CPPFLAGS} ${M-CPPFLAGS} ${CFLAGS} ${M-CFLAGS} -o $@ $<
+%.c.so.o: %.c
+	@${msg} CC $@
+	$Q${CC} -c ${CPPFLAGS} ${M-CPPFLAGS} ${CFLAGS} -fPIC ${M-CFLAGS} -o $@ $<
+%.gz: %
+	@${msg} GZIP $@
+	$Qgzip -fk $<
+
+# Generate dependencies.
+%.c.d: %.c
+	${Q}${CC} -MM ${CPPFLAGS} -MF $@ $<

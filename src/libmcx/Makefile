@@ -1,50 +1,43 @@
 # SPDX-License-Identifier: GPL-2.0-only
 # SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
-SHELL = /bin/sh
-.SUFFIXES:
-.SECONDARY:
-
-SRC  := $(wildcard *.c)
-OBJ  := $(addsuffix .o,${SRC})
-SOBJ := $(addsuffix .so.o,${SRC})
-DEP  := $(addsuffix .d,${SRC})
-
 include ../../Common.mk
+override M-CFLAGS = -flto
+override LDFLAGS += -shared -flto -O2 # No point for this, but eh.
 
-../../libmcx.a: ${OBJ}
-	$(call msg,AR,$(notdir $@))
-	${Q}${AR} -rsc $@ $<
+src  := $(wildcard *.c)
+obj  := $(addsuffix .o,${src})
+sobj := $(addsuffix .so.o,${src})
+dep  := $(addsuffix .d,${src})
 
-ifneq (${OS},Windows_NT)
-../../libmcx.so:  ${SOBJ}
-	$(call msg,LD,$(notdir $@))
-	${Q}${CC} ${LDFLAGS} -shared ${LDLIBS} -o $@ $^
+ifeq (${OS},Windows_NT)
+all: libmcx.a libmcx.dll
 else
-../../libmcx.dll: ${SOBJ}
-	$(call msg,LD,$(notdir $@))
-	${Q}${CC} ${LDFLAGS} -shared ${LDLIBS} -o $@ $^
+all: libmcx.a libmcx.so
 endif
 
-%.c.o: %.c
-	$(call msg,CC,src/libmcx/$@)
-	${Q}${CC} -c ${CPPFLAGS} ${CFLAGS} -o $@ $<
-%.c.so.o: %.c
-	$(call msg,CC,src/libmcx/$@)
-	${Q}${CC} -c ${CPPFLAGS} -fPIC ${CFLAGS} -o $@ $<
+libmcx.a: ${obj}
+	@${msg} AR $@
+	$Q${AR} ${ARFLAGS} -sc $@ $^
+libmcx.so libmcx.dll: ${sobj}
+	@${msg} LD $@
+	$Q${CC} ${LDFLAGS} ${LDLIBS} -o $@ $^
 
-libmcx.a:   ../../libmcx.a
-libmcx.so:  ../../libmcx.so
-libmcx.dll: ../../libmcx.dll
-PHONY += libmcx.a libmcx.so libmcx.dll
+clean:; $Q${RM} libmcx.a libmcx.so libmcx.dll ${obj} ${sobj}
 
-clean:
-	$(call msg,CLEAN,src/libmcx)
-	${Q}${RM} ${SOBJ}
-	${Q}${RM} ${OBJ}
-	${Q}${RM} ${DEP}
-	${Q}${RM} ../../libmcx.a ../../libmcx.so ../../libmcx.dll
-PHONY += clean
-check:; ${Q}sparse ${CPPFLAGS} ${CFLAGS} ${SRC}
-PHONY += check
+ifeq (${OS},Windows_NT)
+# TODO: Windows installation
+install: libmcx.dll
+	$(error Windows install unsupported at this time.)
+uninstall:
+	$(error Windows uninstall unsupported at this time.)
+else
+install: libmcx.so libmcx.a
+	$Q${INSTALL_EXEC} $< ${DESTDIR}${libdir}/$<
+uninstall:
+	$Q${RM}\
+		${DESTDIR}${libdir}/libmcx.so\
+		${DESTDIR}${libdir}/libmcx.a
+endif
+.PHONY: all clean install uninstall
 
-.PHONY: ${PHONY}
+include ${dep}

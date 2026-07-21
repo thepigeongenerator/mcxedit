@@ -19,6 +19,9 @@
 /mcxedit
 /mcxedit.exe
 /mcxedit.static
+/src/mcxedit/mcxedit
+/src/mcxedit/mcxedit.exe
+/src/mcxedit/mcxedit.static
 
 # Ignore temporary files
 *.tmp
