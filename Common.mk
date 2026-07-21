@@ -5,7 +5,7 @@
 .SECONDARY:     # Don't clean up intermediary files
 SHELL = /bin/sh
 
-VERONLY  = v0.0
+VERONLY  = v0.1
 ifndef VERSION
 GIT_TAG := $(shell git describe --tags --match=${VERONLY} 2>/dev/null)
 VERSION := $(if ${GIT_TAG},${GIT_TAG},${VERONLY})
