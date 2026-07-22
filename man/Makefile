@@ -20,12 +20,12 @@ clean:; $Q${RM} ${man}
 install: ${man}
 	$Qcase "$<" in\
 		${foreach n,0 1 2 3 4 5 6 7 8 9,\
-		*.$n.gz) ${INSTALL} $< ${DESTDIR}${man$ndir}/$< ;;\
+		*.$n.gz) ${INSTALL} $< ${DESTDIR}${mandir}/man$n/$< ;;\
 	} esac
 uninstall:
 	$Qfor page in ${man}; do case "$$page" in\
 		${foreach n,0 1 2 3 4 5 6 7 8 9,\
-		*.$n.gz) ${RM} ${DESTDIR}${man$ndir}/$$page ;;\
+		*.$n.gz) ${RM} ${DESTDIR}${mandir}/man$n/$$page ;;\
 	} esac done
 
 .PHONY: all manpages clean install uninstall

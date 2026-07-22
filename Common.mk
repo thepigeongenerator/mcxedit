@@ -20,16 +20,6 @@ bindir   = ${prefix}/bin
 libdir   = ${prefix}/lib
 sharedir = ${prefix}/share
 mandir   = ${sharedir}/man
-man0dir  = ${mandir}/man0
-man1dir  = ${mandir}/man1
-man2dir  = ${mandir}/man2
-man3dir  = ${mandir}/man3
-man4dir  = ${mandir}/man4
-man5dir  = ${mandir}/man5
-man6dir  = ${mandir}/man6
-man7dir  = ${mandir}/man7
-man8dir  = ${mandir}/man8
-man9dir  = ${mandir}/man9
 export srcdir
 
 AR   = ar
