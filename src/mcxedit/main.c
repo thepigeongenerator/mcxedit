@@ -57,16 +57,16 @@ static int procmcx(const char *pat, int opt)
 	/* Open the file, get and check the size. */
 	size = compat_open(pat, &f, need_write);
 	if (size < 0) goto err;
-	if (size < MCX_TABLES) {
+	if (size < MCX_TABLES_SIZE) {
 		size = 0;
 		if (opt & OPT_REPAIR || opt & OPT_DEFRAG)
 			goto suc_close; /* Delete when performing the above. */
 		warnx("cannot use '%s': Too small to contain table (%lluB < %lluB)",
-			pat, (ullong)size, (ullong)MCX_TABLES);
+			pat, (ullong)size, (ullong)MCX_TABLES_SIZE);
 		goto err_close;
 	}
 
-	tmp = size % MCX_SECTOR;
+	tmp = size % MCX_SECTOR_SIZE;
 	if (tmp && !(opt & OPT_QUIET || opt & OPT_CHECK)) {
 		warnx("'%s' may be corrupt: Not 4KiB sector aligned! (%+lldB)",
 			pat, (llong)-tmp);

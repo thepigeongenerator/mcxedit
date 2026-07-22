@@ -13,9 +13,9 @@
 off_t mcx_repair(struct mcx *mcx, off_t size)
 {
 	assert(!((uintptr_t)mcx & 3));
-	assert(size > MCX_TABLES);
+	assert(size > MCX_TABLES_SIZE);
 	be32 *tbl = mcx->table;
-	be32 *end = tbl + MCX_TABLE;
+	be32 *end = tbl + MCX_TABLE_ITEMS;
 	u32   chpos, chlen, chend;
 	u32   max = 0, tmp;
 	do {
@@ -23,7 +23,7 @@ off_t mcx_repair(struct mcx *mcx, off_t size)
 		tmp   = cvt_be32toh(*tbl);
 		chpos = tmp >> 8;
 		chlen = tmp & 0xFF;
-		chend = (chpos + chlen) * MCX_SECTOR;
+		chend = (chpos + chlen) * MCX_SECTOR_SIZE;
 
 		if (chpos < 2 || !chlen) {
 			*tbl = 0;
@@ -36,7 +36,7 @@ off_t mcx_repair(struct mcx *mcx, off_t size)
 		}
 		max = max < tmp ? tmp : max;
 	} while (++tbl < end);
-	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR;
+	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR_SIZE;
 }
 
 /* Comparison function used for qsort.
@@ -52,15 +52,15 @@ static int mcx_defrag_compar(const void *ma, const void *mb)
 off_t mcx_defrag(struct mcx *mcx, off_t size)
 {
 	assert(!((uintptr_t)mcx & 3));
-	assert(size > MCX_TABLES);
-	u32   chunks[MCX_TABLE_LEN * 2];
+	assert(size > MCX_TABLES_SIZE);
+	u32   chunks[MCX_TABLE_ITEMS * 2];
 	u32  *chunk = chunks;
 	be32 *tbl   = mcx->table;
-	for (int i = 0; i < MCX_TABLE_LEN; ++i) {
+	for (int i = 0; i < MCX_TABLE_ITEMS; ++i) {
 		*chunk++ = cvt_be32toh(tbl[i]);
 		*chunk++ = i;
 	}
-	qsort(chunks, MCX_TABLE_LEN, sizeof(*chunks) * 2, mcx_defrag_compar);
+	qsort(chunks, MCX_TABLE_ITEMS, sizeof(*chunks) * 2, mcx_defrag_compar);
 	u32 *end = chunk;
 	chunk    = chunks;
 
@@ -70,9 +70,9 @@ off_t mcx_defrag(struct mcx *mcx, off_t size)
 	do {
 		chpos  = *chunk >> 8;
 		chlen  = *chunk & 0xFF;
-		fpos   = pos * MCX_SECTOR;
-		fchpos = chpos * MCX_SECTOR;
-		fchlen = chlen * MCX_SECTOR;
+		fpos   = pos * MCX_SECTOR_SIZE;
+		fchpos = chpos * MCX_SECTOR_SIZE;
+		fchlen = chlen * MCX_SECTOR_SIZE;
 		if (fchpos + fchlen > size) {
 			tbl[chunk[1]] = 0;
 			/* BUG: Whilst this may correctly handle out-of-bounds chunks, this
@@ -89,31 +89,31 @@ next_table_item:
 	} while ((chunk += 2) < end);
 	if (pos == 2)
 		return 0;
-	return pos * MCX_SECTOR;
+	return pos * MCX_SECTOR_SIZE;
 }
 
 off_t mcx_calcsize(const struct mcx *mcx)
 {
 	assert(!((uintptr_t)mcx & 3));
 	const be32 *tbl = mcx->table;
-	const be32 *end = tbl + MCX_TABLE_LEN;
+	const be32 *end = tbl + MCX_TABLE_ITEMS;
 	u32         max = 0, tmp;
 	do {
 		tmp = cvt_be32toh(*tbl);
 		max = max < tmp ? tmp : max;
 	} while (++tbl < end);
-	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR;
+	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR_SIZE;
 }
 
 off_t mcx_sumsize(const struct mcx *mcx)
 {
 	const u8 *ptr = (const u8 *)mcx->table + 3;
-	size_t n = MCX_TABLE;
+	size_t n = MCX_TABLE_SIZE;
 
 	off_t sum = 0;
 	do {
 		sum += *ptr;
 		ptr += 4;
 	} while(--n);
-	return sum * MCX_SECTOR + MCX_TABLES;
+	return sum * MCX_SECTOR_SIZE + MCX_TABLES_SIZE;
 }

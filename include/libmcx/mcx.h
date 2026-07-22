@@ -8,15 +8,15 @@
 #include <libmcx/types.h>
 #include <stdio.h>
 
-#define MCX_SECTOR     0x1000 /* Size in bytes for a sector. */
-#define MCX_TABLE      0x1000 /* Size in bytes for one table. */
-#define MCX_TABLES     0x2000 /* Size in bytes for the tables. */
-#define MCX_TABLE_LEN  0x400  /* Amount of elements within one table. */
-#define MCX_TABLES_LEN 0x800  /* Amount of elements within the tables. */
+#define MCX_SECTOR_SIZE  0x1000
+#define MCX_TABLE_SIZE   0x1000
+#define MCX_TABLES_SIZE  0x2000
+#define MCX_TABLE_ITEMS  0x400
+#define MCX_TABLES_ITEMS 0x800
 
 struct mcx {
-	be32 table[MCX_TABLES_LEN];
-	u8   sector[][MCX_SECTOR];
+	be32 table[MCX_TABLES_ITEMS];
+	u8   sector[][MCX_SECTOR_SIZE];
 };
 
 /* Repairs faults in the file format,
