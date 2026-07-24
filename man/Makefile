@@ -6,7 +6,6 @@ groff := $(patsubst  %.rst,%,${src})
 man   := $(addsuffix .gz,${groff})
 
 all: ${man}
-manpages: ${groff}
 
 %: %.rst
 	@${msg} RST2MAN $@

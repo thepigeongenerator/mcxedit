@@ -3,12 +3,11 @@
 include Common.mk
 
 all: ${modules}
-	$Q${MAKE} -C man $@
 clean:
 	$Q$(foreach mod,${modules}, ${MAKE} -C src/${mod} $@ &&) true
 	$Q${MAKE} -C man $@
 manpages:
-	$Q${MAKE} -C man $@
+	$Q${MAKE} -C man all
 ${modules}:
 	${MAKE} -C src/$@ all
 mcxedit: libmcx
