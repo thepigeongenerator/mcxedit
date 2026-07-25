@@ -18,12 +18,6 @@ static ssize_t nbt_primitive_size(u8 id)
 	return -1;
 }
 
-/* TODO: Should really use my unit test thing for this.
- * Test cases:
- *  - List as root
- *  - List of Lists
- *  - List of Compounds
- */
 ssize_t nbt_taglen(const u8 *restrict tag, int root,
 	u8 *restrict tagcache, s32 *lencache)
 {
