@@ -26,7 +26,7 @@ u32 loadbe32(const u8 *buf)
 	return (u32)buf[0] << 000 | (u32)buf[1] << 010 |
 	       (u32)buf[2] << 020 | (u32)buf[3] << 030;
 #else
-	       (u32)buf[3] << 000 | (u32)buf[2] << 010 |
+	return (u32)buf[3] << 000 | (u32)buf[2] << 010 |
 	       (u32)buf[1] << 020 | (u32)buf[0] << 030;
 #endif
 }
