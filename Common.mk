@@ -52,7 +52,7 @@ CFLAGS   += -std=gnu17\
 	    -Wmissing-declarations -Wmissing-prototypes -Wundef -Wvla\
 	    -Werror=date-time -Werror=designated-init -Werror=return-type\
 	    -Werror=strict-prototypes\
-	    -Wno-pointer-arith -Wno-pointer-sign -Wno-switch\
+	    -Wno-pointer-arith -Wno-pointer-sign -Wno-sign-compare -Wno-switch\
 	    -Wno-unused-but-set-variable -Wno-unused-const-variable\
 	    -Wno-unused-parameter
 override\
