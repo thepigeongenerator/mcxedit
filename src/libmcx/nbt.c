@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
+#include <libmcx/err.h>
 #include <libmcx/nbt.h>
 
 #include "endian.h"
@@ -51,7 +52,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 
 		if (id == NBT_ARR_S8) {
 			s32 n = loadbe32(tmp);
-			if (n < 0) return -ENBT_IND;
+			if (n < 0) return -MCX_ERANGE;
 			tmp += n + 4;
 			continue;
 		}
@@ -68,7 +69,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 			 * Then again, it wouldn't cause much issue. */
 			id = *tmp++;
 			s32 n = loadbe32(tmp);
-			if (n < 0) return -ENBT_IND;
+			if (n < 0) return -MCX_ERANGE;
 			tmp += 4;
 
 			/* NOTE: TAG_END is allowed, but has a size of 0. */
@@ -87,15 +88,15 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 		if (id <= NBT_ARR_S64) {
 			size_t size = (id == NBT_ARR_S32) ? 4 : 8;
 			s32 n = loadbe32(tmp);
-			if (n < 0) return -ENBT_IND;
+			if (n < 0) return -MCX_ERANGE;
 			tmp += size * n + 5;
 			continue;
 		}
-		return -ENBT_TAG;
+		return -MCX_ETAG;
 depth_increase:
 		depth++;
 		if (depth >= NBT_NEST_MAX)
-			return -ENBT_DEPTH;
+			return -MCX_EITER;
 		/* This is safe for compound tags, even though it isn't used.
 		 * It mainly simplifies the code branches. */
 		cache->tags[depth] = id;
@@ -125,17 +126,4 @@ char *nbt_popnode(char *path)
 	while (c && c != '.');
 	path[-1] = '\0';
 	return c ? path : NULL;
-}
-
-static const char *errors[ENBT_DEPTH+1] = {
-	[0]          = "Success",
-	[ENBT_TAG]   = "Invalid tag",
-	[ENBT_IND]   = "Invalid index",
-	[ENBT_DEPTH] = "Too many nested lists and compound tags",
-};
-const char *nbt_errstr(int code)
-{
-	if (code < 0 || code > ENBT_DEPTH)
-		return NULL;
-	return errors[code];
 }

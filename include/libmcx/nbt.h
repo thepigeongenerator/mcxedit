@@ -1,7 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#include "libmcx/atrb.h"
 #ifndef MCXEDIT_NBT_H
 #define MCXEDIT_NBT_H 1
 #include <libmcx/types.h>
@@ -38,8 +37,8 @@ struct nbt_cache {
  * "root" must be <NBT_NEST_MAX, and will be the current depth.
  * "cache" points to the cache arrays, where everything >root may be written.
  * <root won't be touched.
- * Returns the size in bytes of the current tag, or <0 for an error.
- * Negating this error value will yield a valid value for nbt_errstr. */
+ * Returns the size in bytes of the current tag, or <0 for the error value as
+ * "-error". */
 ssize_t nbt_taglen(const mcx_u8 *restrict tag, int root,
 	struct nbt_cache *restrict cache);
 
@@ -52,10 +51,5 @@ int nbt_tagnamecmp(const mcx_u8 *tag, const char *str);
  * Returns the pointer to the next node,
  * or NULL if the end of the path was reached. */
 char *nbt_popnode(char *path);
-
-#define ENBT_TAG   1
-#define ENBT_IND   2
-#define ENBT_DEPTH 3
-const char *nbt_errstr(int code) CONST COLD;
 
 #endif /* MCXEDIT_NBT_H */
