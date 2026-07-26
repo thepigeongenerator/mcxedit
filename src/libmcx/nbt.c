@@ -19,17 +19,16 @@ static ssize_t nbt_primitive_size(u8 id)
 }
 
 ssize_t nbt_taglen(const u8 *restrict tag, int root,
-	u8 *restrict tagcache, s32 *lencache)
+	struct nbt_cache *restrict cache)
 {
 	assert(root < NBT_NEST_MAX);
-	tagcache += root;
 	int depth = root;
 	u8 id;
 	const u8 *tmp = tag;
 	do {
 		/* Because it is a recursive algorithm,
 		 * we must keep track of the tags in a cache. */
-		if (!depth || tagcache[-1] != NBT_LIST) {
+		if (!depth || cache->tags[depth-1] != NBT_LIST) {
 			id = *tmp++;
 
 			if (id == NBT_END)
@@ -45,9 +44,9 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 			}
 		} else {
 			/* Lists are a bitch to parse. */
-			if (lencache[-1]-- == 0)
+			if (cache->lens[depth-1]-- == 0)
 				goto depth_decrease;
-			id = *tagcache;
+			id = cache->tags[depth];
 		}
 
 		if (id == NBT_ARR_S8) {
@@ -63,7 +62,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 		}
 
 		if (id == NBT_LIST) {
-			*tagcache = id;
+			cache->tags[depth] = id;
 			/* WARN: May want to increment and check here.
 			 * Since we'd skip the limit if it's a primitive.
 			 * Then again, it wouldn't cause much issue. */
@@ -79,7 +78,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 				tmp  += size;
 				continue;
 			}
-			*lencache = n;
+			cache->lens[depth] = n;
 			goto depth_increase;
 		}
 		if (id == NBT_COMPOUND)
@@ -95,19 +94,15 @@ ssize_t nbt_taglen(const u8 *restrict tag, int root,
 		return -ENBT_TAG;
 depth_increase:
 		depth++;
-		tagcache++;
-		lencache++;
 		if (depth >= NBT_NEST_MAX)
 			return -ENBT_DEPTH;
 		/* This is safe for compound tags, even though it isn't used.
 		 * It mainly simplifies the code branches. */
-		*tagcache = id;
+		cache->tags[depth] = id;
 		continue;
 depth_decrease:
 		if (depth == root) break;
 		depth--;
-		tagcache--;
-		lencache--;
 	} while (depth != root);
 	return tmp - tag;
 }

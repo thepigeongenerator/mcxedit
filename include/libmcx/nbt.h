@@ -27,15 +27,21 @@ enum nbt_tagid {
 	NBT_ARR_S64  = 0x0C,
 };
 
+/* Cache that is used for the recursive operations on NBT trees. */
+struct nbt_cache {
+	mcx_u8  tags[NBT_NEST_MAX];
+	mcx_s32 lens[NBT_NEST_MAX];
+};
+
 /* Returns the tag length.
  * "tag"  has to be a fully-fledged tag. It cannot reside within a list.
  * "root" must be <NBT_NEST_MAX, and will be the current depth.
- * "tagcache" points to a list of tags, where everything >root may be written.
- * <root won't be touched. Same goes for "lencache".
+ * "cache" points to the cache arrays, where everything >root may be written.
+ * <root won't be touched.
  * Returns the size in bytes of the current tag, or <0 for an error.
  * Negating this error value will yield a valid value for nbt_errstr. */
 ssize_t nbt_taglen(const mcx_u8 *restrict tag, int root,
-	u8 *restrict tagcache, s32 *lencache);
+	struct nbt_cache *restrict cache);
 
 /* Compares the name of the fully-fledged tag
  * against a NUL-terminated string.
