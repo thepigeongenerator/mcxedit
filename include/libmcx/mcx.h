@@ -15,8 +15,8 @@
 #define MCX_TABLES_ITEMS 0x800
 
 struct mcx {
-	be32 table[MCX_TABLES_ITEMS];
-	u8   sector[][MCX_SECTOR_SIZE];
+	mcx_be32 table[MCX_TABLES_ITEMS];
+	mcx_u8   sector[][MCX_SECTOR_SIZE];
 };
 
 /* Repairs faults in the file format,
