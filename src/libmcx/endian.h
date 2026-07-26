@@ -20,6 +20,12 @@
 #define cvt_htobe16(x) ((FORCE be16)__builtin_bswap16(x))
 #define cvt_htobe32(x) ((FORCE be32)__builtin_bswap32(x))
 #define cvt_htobe64(x) ((FORCE be64)__builtin_bswap64(x))
+#define loadbe16 loadbswap16
+#define loadbe32 loadbswap32
+#define loadbe64 loadbswap64
+#define loadle16 load16
+#define loadle32 load32
+#define loadle64 load64
 #elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #define cvt_le16toh(x) (__builtin_bswap16((FORCE u16)(le16)x))
 #define cvt_le32toh(x) (__builtin_bswap32((FORCE u32)(le32)x))
@@ -33,17 +39,31 @@
 #define cvt_htobe16(x) ((FORCE be16)(u16)x)
 #define cvt_htobe32(x) ((FORCE be32)(u32)x)
 #define cvt_htobe64(x) ((FORCE be64)(u64)x)
+#define loadbe16 load16
+#define loadbe32 load32
+#define loadbe64 load64
+#define loadle16 loadbswap16
+#define loadle32 loadbswap32
+#define loadle64 loadbswap64
 #else
 #error "Machine architecture unsupported! Expected either big-endian or little-endian."
 #endif
 
-/* Loads a 16-bit big-endian integer from an unaligned buffer. */
-mcx_u16 loadbe16(const u8 *buf) PURE;
+/* Loads a 16-bit integer from an unaligned buffer. */
+u16 load16(const u8 *buf) PURE;
 
-/* Loads a 32-bit big-endian integer from an unaligned buffer. */
-mcx_u32 loadbe32(const u8 *buf) PURE;
+/* Loads a 32-bit integer from an unaligned buffer. */
+u32 load32(const u8 *buf) PURE;
 
-/* Loads a 64-bit big-endian integer from an unaligned buffer. */
-mcx_u64 loadbe64(const u8 *buf) PURE;
+/* Loads and bswaps a 16-bit integer from an unaligned buffer. */
+u16 loadbswap16(const u8 *buf) PURE;
 
+/* Loads a 64-bit integer from an unaligned buffer. */
+u64 load64(const u8 *buf) PURE;
+
+/* Loads and bswaps a 32-bit integer from an unaligned buffer. */
+u32 loadbswap32(const u8 *buf) PURE;
+
+/* Loads and bswaps a 64-bit integer from an unaligned buffer. */
+u64 loadbswap64(const u8 *buf) PURE;
 #endif /* MCXEDIT_ENDIAN_H */
