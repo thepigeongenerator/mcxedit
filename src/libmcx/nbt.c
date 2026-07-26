@@ -105,7 +105,8 @@ depth_decrease:
 		if (depth == root) break;
 		depth--;
 	} while (depth != root);
-	return tmp - tag;
+	ssize_t len = tmp - tag;
+	return len >= 0 ? len : -MCX_EBIG;
 }
 
 int nbt_tagnamecmp(const u8 *tag, const char *str)
