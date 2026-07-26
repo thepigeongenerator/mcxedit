@@ -33,13 +33,14 @@ struct nbt_cache {
 };
 
 /* Returns the tag length.
- * "tag"  has to be a fully-fledged tag. It cannot reside within a list.
- * "root" must be <NBT_NEST_MAX, and will be the current depth.
- * "cache" points to the cache arrays, where everything >root may be written.
- * <root won't be touched.
+ * "tag"    has to be a fully-fledged tag. It cannot reside within a list.
+ * "maxlen" is the upper bound from which "tag" is known to be valid.
+ * "root"   must be <NBT_NEST_MAX, and will be the current depth.
+ * "cache"  points to the cache arrays, where everything >root may be written.
+ *          <root won't be touched.
  * Returns the size in bytes of the current tag, or <0 for the error value as
  * "-error". */
-ssize_t nbt_taglen(const mcx_u8 *restrict tag, int root,
+ssize_t nbt_taglen(const mcx_u8 *restrict tag, size_t maxlen, int root,
 	struct nbt_cache *restrict cache);
 
 /* Compares the name of the fully-fledged tag
