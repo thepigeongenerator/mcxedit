@@ -59,25 +59,23 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			id = cache->tags[depth];
 		}
 
-		if (id == NBT_ARR_S8) {
-			s32 n = loadbe32(tmp);
+		s32 n;
+		switch (id) {
+		case NBT_ARR_S8:
+			n = loadbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += n + 4;
 			goto check_and_continue;
-		}
-
-		if (id == NBT_STR) {
+		case NBT_STR:
 			tmp += loadbe16(tmp) + 2;
 			goto check_and_continue;
-		}
-
-		if (id == NBT_LIST) {
+		case NBT_LIST:
 			cache->tags[depth] = id;
 			/* WARN: May want to increment and check here.
 			 * Since we'd skip the limit if it's a primitive.
 			 * Then again, it wouldn't cause much issue. */
 			id = *tmp++;
-			s32 n = loadbe32(tmp);
+			n = loadbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += 4;
 
@@ -91,9 +89,9 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			cache->lens[depth] = n;
 			if (tmp >= max) return -MCX_EFAULT;
 			goto depth_increase;
-		}
-		if (id == NBT_COMPOUND)
+		case NBT_COMPOUND:
 			goto depth_increase;
+		}
 
 		if (id <= NBT_ARR_S64) {
 			size_t size = (id == NBT_ARR_S32) ? 4 : 8;
