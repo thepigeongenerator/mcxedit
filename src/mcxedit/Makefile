@@ -6,8 +6,8 @@ override LDFLAGS += -flto -O2
 override LDLIBS  += -lmcx
 
 src  := $(wildcard *.c)
-obj  := $(addsuffix .o,${src})
-dep  := $(addsuffix .d,${src})
+obj  := $(src:.c=.o)
+dep  := $(obj:.o=.d)
 
 ifeq (${OS},Windows_NT)
 all: mcxedit.exe

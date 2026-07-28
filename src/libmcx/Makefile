@@ -5,9 +5,9 @@ override M-CFLAGS = -flto
 override LDFLAGS += -shared -flto -O2 # No point for this, but eh.
 
 src  := $(wildcard *.c)
-obj  := $(addsuffix .o,${src})
-sobj := $(addsuffix .so.o,${src})
-dep  := $(addsuffix .d,${src})
+obj  := $(src:.c=.o)
+sobj := $(obj:.o=.so.o)
+dep  := $(obj:.o=.d)
 
 ifeq (${OS},Windows_NT)
 all: libmcx.a libmcx.dll

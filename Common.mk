@@ -72,12 +72,12 @@ Q=
 endif
 
 # Rule Definitions
-%.c.o: %.c
+%.o: %.c
 	@${msg} CC $@
 	$Q${CC} -c -MMD\
 		${CPPFLAGS} ${M-CPPFLAGS}\
 		${CFLAGS} ${M-CFLAGS} -o $@ $<
-%.c.so.o: %.c
+%.so.o: %.c
 	@${msg} CC $@
 	$Q${CC} -c -MMD\
 		${CPPFLAGS} ${M-CPPFLAGS}\
