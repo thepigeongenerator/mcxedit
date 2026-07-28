@@ -14,13 +14,12 @@ endif
 
 modules = mcxedit libmcx
 
-srcdir  ?= ${CURDIR}
+srcdir  := $(dir $(lastword $(MAKEFILE_LIST)))
 prefix   = /usr/local
 bindir   = ${prefix}/bin
 libdir   = ${prefix}/lib
 sharedir = ${prefix}/share
 mandir   = ${sharedir}/man
-export srcdir
 
 AR   = ar
 CC   = cc
