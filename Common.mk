@@ -74,14 +74,14 @@ endif
 # Rule Definitions
 %.c.o: %.c
 	@${msg} CC $@
-	$Q${CC} -c ${CPPFLAGS} ${M-CPPFLAGS} ${CFLAGS} ${M-CFLAGS} -o $@ $<
+	$Q${CC} -c -MMD\
+		${CPPFLAGS} ${M-CPPFLAGS}\
+		${CFLAGS} ${M-CFLAGS} -o $@ $<
 %.c.so.o: %.c
 	@${msg} CC $@
-	$Q${CC} -c ${CPPFLAGS} ${M-CPPFLAGS} ${CFLAGS} -fPIC ${M-CFLAGS} -o $@ $<
+	$Q${CC} -c -MMD\
+		${CPPFLAGS} ${M-CPPFLAGS}\
+		${CFLAGS} -fPIC ${M-CFLAGS} -o $@ $<
 %.gz: %
 	@${msg} GZIP $@
 	$Qgzip -fk $<
-
-# Generate dependencies.
-%.c.d: %.c
-	${Q}${CC} -MM ${CPPFLAGS} -MF $@ $<

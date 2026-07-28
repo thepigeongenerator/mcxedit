@@ -22,7 +22,7 @@ libmcx.so libmcx.dll: ${sobj}
 	@${msg} LD $@
 	$Q${CC} ${LDFLAGS} ${LDLIBS} -o $@ $^
 
-clean:; $Q${RM} libmcx.a libmcx.so libmcx.dll ${obj} ${sobj}
+clean:; $Q${RM} libmcx.a libmcx.so libmcx.dll ${obj} ${sobj} ${dep}
 
 ifeq (${OS},Windows_NT)
 # TODO: Windows installation
@@ -40,4 +40,4 @@ uninstall:
 endif
 .PHONY: all clean install uninstall
 
-include ${dep}
+-include ${dep}

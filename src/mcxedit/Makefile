@@ -28,7 +28,7 @@ mcxedit.static mcxedit.static.exe: mcxedit.a
 clean:; $Q${RM} mcxedit.a \
 	mcxedit mcxedit.exe\
 	mcxedit.static mcxedit.static.exe\
-	${obj}
+	${obj} ${dep}
 
 ifeq (${OS},Windows_NT)
 # TODO: Windows installation
@@ -45,4 +45,4 @@ endif
 
 .PHONY: all clean install uninstall
 
-include ${dep}
+-include ${dep}
