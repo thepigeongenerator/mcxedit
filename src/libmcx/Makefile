@@ -4,9 +4,8 @@ include ../../Common.mk
 override M-CFLAGS = -flto
 override LDFLAGS += -shared -flto -O2 # No point for this, but eh.
 
-src  := $(wildcard *.c)
-obj  := $(src:.c=.o)
-sobj := $(obj:.o=.so.o)
+obj  := err.o mcx.o nbt.o
+sobj := err.so.o mcx.so.o nbt.so.o
 dep  := $(obj:.o=.d)
 
 ifeq (${OS},Windows_NT)

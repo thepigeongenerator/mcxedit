@@ -5,8 +5,7 @@ override M-CFLAGS = -flto
 override LDFLAGS += -flto -O2
 override LDLIBS  += -lmcx
 
-src  := $(wildcard *.c)
-obj  := $(src:.c=.o)
+obj  := main.o conf.o compat.o getopt.o err.o
 dep  := $(obj:.o=.d)
 
 ifeq (${OS},Windows_NT)
