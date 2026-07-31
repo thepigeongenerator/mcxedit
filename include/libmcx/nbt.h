@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#ifndef MCXEDIT_NBT_H
-#define MCXEDIT_NBT_H 1
+#ifndef LIBMCX_NBT_H
+#define LIBMCX_NBT_H 1
 #include <libmcx/types.h>
 #include <stdint.h>
 #include <sys/types.h>
@@ -53,4 +53,4 @@ int nbt_tagnamecmp(const mcx_u8 *tag, const char *str);
  * or NULL if the end of the path was reached. */
 char *nbt_popnode(char *path);
 
-#endif /* MCXEDIT_NBT_H */
+#endif /* LIBMCX_NBT_H */

@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#ifndef MCXEDIT_TYPES_H
-#define MCXEDIT_TYPES_H 1
+#ifndef LIBMCX_TYPES_H
+#define LIBMCX_TYPES_H 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -65,4 +65,4 @@ typedef double f64;
 #endif
 #endif /* MCXEDIT_SOURCE */
 
-#endif /* MCXEDIT_TYPES_H */
+#endif /* LIBMCX_TYPES_H */

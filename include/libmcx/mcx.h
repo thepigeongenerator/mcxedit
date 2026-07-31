@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#ifndef MCXEDIT_MCX_H
-#define MCXEDIT_MCX_H 1
+#ifndef LIBMCX_MCX_H
+#define LIBMCX_MCX_H 1
 
 #include <libmcx/atrb.h>
 #include <libmcx/types.h>
@@ -53,4 +53,4 @@ off_t mcx_calcsize(const struct mcx *mcx) PURE;
  * than the actual file size. */
 off_t mcx_sumsize(const struct mcx *mcx) PURE;
 
-#endif /* MCXEDIT_MCX_H */
+#endif /* LIBMCX_MCX_H */

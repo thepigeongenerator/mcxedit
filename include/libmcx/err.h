@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#ifndef MCXEDIT_ERR_H
-#define MCXEDIT_ERR_H 1
+#ifndef LIBMCX_ERR_H
+#define LIBMCX_ERR_H 1
 #include <libmcx/atrb.h>
 
 /* libmcx error codes */
@@ -17,4 +17,4 @@
  * or NULL if the error code was invalid. */
 const char *mcx_errstr(int code) CONST COLD;
 
-#endif /* MCXEDIT_ERR_H */
+#endif /* LIBMCX_ERR_H */

@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#ifndef MCXEDIT_ATRB_H
-#define MCXEDIT_ATRB_H 1
+#ifndef LIBMCX_ATRB_H
+#define LIBMCX_ATRB_H 1
 
 #ifndef __GNUC__
 #error "Compiler unsupported; use a compiler that supports GNU C extensions."
@@ -81,4 +81,4 @@
 #define FALLTHROUGH
 #endif /* __has_attribute(__fallthrough__) */
 
-#endif /* MCXEDIT_ATRB_H */
+#endif /* LIBMCX_ATRB_H */
