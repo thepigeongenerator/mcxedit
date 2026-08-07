@@ -11,13 +11,15 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-static ssize_t nbt_primitive_size(u8 id)
-{
-	if (id == NBT_END) return 0;
-	if (id <= NBT_S64) return 1 << --id;
-	if (id <= NBT_F64) return 1 << (id - 3);
-	return -1;
-}
+static const u8 nbt_primitive_size[] = {
+	[NBT_END] = 0,
+	[NBT_S8]  = 1,
+	[NBT_S16] = 2,
+	[NBT_S32] = 4,
+	[NBT_S64] = 8,
+	[NBT_F32] = 4,
+	[NBT_F64] = 8,
+};
 
 ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 	struct nbt_cache *restrict cache)
@@ -47,9 +49,8 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			if (tmp >= max)
 				return -MCX_EFAULT;
 
-			ssize_t size = nbt_primitive_size(id);
-			if (size >= 0) {
-				tmp += size;
+			if (id < sizeof(nbt_primitive_size)) {
+				tmp += nbt_primitive_size[id];
 				goto check_and_continue;
 			}
 		} else {
@@ -80,10 +81,8 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			tmp += 4;
 
 			/* NOTE: TAG_END is allowed, but has a size of 0. */
-			ssize_t size = nbt_primitive_size(id);
-			if (size >= 0) {
-				size *= n;
-				tmp  += size;
+			if (id < sizeof(nbt_primitive_size)) {
+				tmp += nbt_primitive_size[id] * n;
 				goto check_and_continue;
 			}
 			cache->lens[depth] = n;
