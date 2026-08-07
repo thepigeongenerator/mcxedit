@@ -93,6 +93,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		}
 
 		if (id <= NBT_ARR_S64) {
+			ASSUME((id >= NBT_ARR_S32));
 			size_t size = (id == NBT_ARR_S32) ? 4 : 8;
 			s32 n = loadbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
