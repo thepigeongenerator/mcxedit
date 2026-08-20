@@ -17,6 +17,8 @@
 *.xz
 *.zip
 /mcxedit
+/mcxedit-test
+/mcxedit-test.exe
 /mcxedit.exe
 /mcxedit.static
 /src/mcxedit/mcxedit

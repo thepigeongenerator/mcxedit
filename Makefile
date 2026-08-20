@@ -15,7 +15,7 @@ VERSION := $(if ${GIT_TAG},${GIT_TAG},${VERONLY})
 
 # Definitions of the available modules and manuals.
 # This is used in later rules for calling
-modules = mcxedit libmcx
+modules = test mcxedit libmcx
 include man/Makefile
 manpaths := $(addprefix man/, ${manuals})
 
@@ -42,8 +42,12 @@ mandir   = ${sharedir}/man
 
 ifeq (${OS},Windows_NT)
 all: mcxedit.exe libmcx.dll libmcx.a
+test: mcxedit-test.exe
+	$Q./$<
 else
 all: mcxedit libmcx.so libmcx.a
+test: mcxedit-test
+	$Q./$<
 endif # Windows_NT
 
 manpages: ${manpaths}
@@ -99,6 +103,9 @@ $(eval src/${mod}/%.o: CFLAGS   += ${${mod}-cflags})        \
 $(eval src/${mod}/${mod}.a: ${${mod}-obj})                  \
 )
 
+mcxedit-test mcxedit-test.exe: ${test-obj}
+	@${msg} LD $@
+	$Q${CC} ${LDFLAGS} ${LDLIBS} -o $@ $^
 mcxedit: libmcx.so
 mcxedit.exe: libmcx.dll
 mcxedit mcxedit.exe: src/mcxedit/mcxedit.a
@@ -148,7 +155,7 @@ clean:
 	@find . -type f \
 		\( -name '*.[asod]' -o -name '*.so'\
 		-o -name '*.obj'  -o -name '*.dll' -o -name '*.exe'\
-		-o -name '*.gz' -o -name 'mcxedit'\
+		-o -name '*.gz' -o -name 'mcxedit' -o -name 'mcxedit-test'\
 		\) -print | xargs ${RM} -v
 
 # Installation targets
@@ -181,4 +188,4 @@ uninstall:
 PHONY += __install_bin __install_lib __install_man
 endif
 
-.PHONY: all manpages clean install uninstall ${PHONY}
+.PHONY: all test manpages clean install uninstall ${PHONY}
