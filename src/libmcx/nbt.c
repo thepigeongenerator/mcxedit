@@ -47,16 +47,14 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		 * we must keep track of the tags in a cache. */
 		if (!depth || cache->tags[depth-1] != NBT_LIST) {
 			id = *tmp++;
-			if (tmp >= max)
-				return -MCX_EFAULT;
 
 			if (id == NBT_END)
 				goto depth_decrease;
 
 			/* Skip the tag name. */
-			tmp += readbe16(tmp) + 2;
-			if (tmp >= max)
+			if (tmp+2 > max)
 				return -MCX_EFAULT;
+			tmp += readbe16(tmp) + 2;
 
 			if (id < PRIMITIVES) {
 				tmp += nbt_primitive_size[id];
@@ -72,19 +70,30 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		s32 n;
 		switch (id) {
 		case NBT_ARR_S8:
+			if (tmp+4 > max)
+				return -MCX_EFAULT;
+
 			n = readbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += n + 4;
 			goto check_and_continue;
 		case NBT_STR:
+			if (tmp+2 > max)
+				return -MCX_EFAULT;
+
 			tmp += readbe16(tmp) + 2;
 			goto check_and_continue;
 		case NBT_LIST:
 			/* WARN: Setting ID to current depth? */
 			cache->tags[depth] = id;
-			/* WARN: May want to increment and check here.
+
+			if (tmp+5 > max)
+				return -MCX_EFAULT;
+
+			/* NOTE: May want to increment and check here.
 			 * Since we'd skip the limit if it's a primitive.
 			 * Then again, it wouldn't cause much issue. */
+
 			id = *tmp++;
 			n = readbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
@@ -96,7 +105,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 				goto check_and_continue;
 			}
 			cache->lens[depth] = n;
-			if (tmp >= max) return -MCX_EFAULT;
+			if (tmp > max) return -MCX_EFAULT;
 			goto depth_increase;
 		case NBT_COMPOUND:
 			goto depth_increase;
@@ -104,9 +113,13 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 
 		if (id <= NBT_ARR_S64) {
 			size_t size = nbt_primitive_size[id];
+
+			if (tmp+4 > max)
+				return -MCX_EFAULT;
+
 			s32 n = readbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
-			tmp += size * n + 5;
+			tmp += size * n + 4;
 			goto check_and_continue;
 		}
 		return -MCX_ETAG;
