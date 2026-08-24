@@ -45,7 +45,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 				goto depth_decrease;
 
 			/* Skip the tag name. */
-			tmp += loadbe16(tmp) + 2;
+			tmp += readbe16(tmp) + 2;
 			if (tmp >= max)
 				return -MCX_EFAULT;
 
@@ -63,20 +63,21 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		s32 n;
 		switch (id) {
 		case NBT_ARR_S8:
-			n = loadbe32(tmp);
+			n = readbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += n + 4;
 			goto check_and_continue;
 		case NBT_STR:
-			tmp += loadbe16(tmp) + 2;
+			tmp += readbe16(tmp) + 2;
 			goto check_and_continue;
 		case NBT_LIST:
+			/* WARN: Setting ID to current depth? */
 			cache->tags[depth] = id;
 			/* WARN: May want to increment and check here.
 			 * Since we'd skip the limit if it's a primitive.
 			 * Then again, it wouldn't cause much issue. */
 			id = *tmp++;
-			n = loadbe32(tmp);
+			n = readbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += 4;
 
@@ -95,7 +96,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		if (id <= NBT_ARR_S64) {
 			ASSUME((id >= NBT_ARR_S32));
 			size_t size = (id == NBT_ARR_S32) ? 4 : 8;
-			s32 n = loadbe32(tmp);
+			s32 n = readbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += size * n + 5;
 			goto check_and_continue;
@@ -114,6 +115,9 @@ depth_decrease:
 		depth--;
 		continue;
 check_and_continue:
+		/* WARN: If taglen is correct,
+		 * but means moving to the end of the buffer,
+		 * will this result in EFAULT? */
 		if (tmp < max) continue;
 		return -MCX_EFAULT;
 	} while (depth != root);
@@ -122,7 +126,7 @@ check_and_continue:
 
 int nbt_tagnamecmp(const u8 *tag, const char *str)
 {
-	u16 n = loadbe16(++tag);
+	u16 n = readbe16(++tag);
 	tag += 2;
 	int v;
 
