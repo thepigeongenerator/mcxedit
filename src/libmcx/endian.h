@@ -177,10 +177,10 @@ static inline void write64(u8 *buf, u64 v)
 #if defined(MAY_UNALIGNED_ACCESS)
 	*(u64 *)buf = v;
 #else
-	buf[0] = v << 000; buf[1] = v << 010;
-	buf[2] = v << 020; buf[3] = v << 030;
-	buf[4] = v << 040; buf[5] = v << 050;
-	buf[6] = v << 060; buf[7] = v << 070;
+	buf[0] = v >> 000; buf[1] = v >> 010;
+	buf[2] = v >> 020; buf[3] = v >> 030;
+	buf[4] = v >> 040; buf[5] = v >> 050;
+	buf[6] = v >> 060; buf[7] = v >> 070;
 #endif
 }
 
@@ -190,10 +190,10 @@ static inline void writebswap64(u8 *buf, u64 v)
 #if defined(MAY_UNALIGNED_ACCESS)
 	*(u64 *)buf = __builtin_bswap64(v);
 #else
-	buf[7] = v << 000; buf[6] = v << 010;
-	buf[5] = v << 020; buf[4] = v << 030;
-	buf[3] = v << 040; buf[2] = v << 050;
-	buf[1] = v << 060; buf[0] = v << 070;
+	buf[7] = v >> 000; buf[6] = v >> 010;
+	buf[5] = v >> 020; buf[4] = v >> 030;
+	buf[3] = v >> 040; buf[2] = v >> 050;
+	buf[1] = v >> 060; buf[0] = v >> 070;
 #endif
 }
 #endif /* MCXEDIT_ENDIAN_H */
