@@ -9,16 +9,25 @@
 #include <libmcx/err.h>
 #include <libmcx/types.h>
 #include <stddef.h>
+#include <string.h>
 #include <sys/types.h>
 
+#define PRIMITIVES 7
+
 static const u8 nbt_primitive_size[] = {
-	[NBT_END] = 0,
-	[NBT_S8]  = 1,
-	[NBT_S16] = 2,
-	[NBT_S32] = 4,
-	[NBT_S64] = 8,
-	[NBT_F32] = 4,
-	[NBT_F64] = 8,
+	[NBT_END]      = 0,
+	[NBT_S8]       = 1,
+	[NBT_S16]      = 2,
+	[NBT_S32]      = 4,
+	[NBT_S64]      = 8,
+	[NBT_F32]      = 4,
+	[NBT_F64]      = 8,
+	[NBT_ARR_S8]   = 1,
+	[NBT_STR]      = 1,
+	[NBT_LIST]     = -1,
+	[NBT_COMPOUND] = -1,
+	[NBT_ARR_S32]  = 4,
+	[NBT_ARR_S64]  = 8,
 };
 
 ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
@@ -49,7 +58,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			if (tmp >= max)
 				return -MCX_EFAULT;
 
-			if (id < sizeof(nbt_primitive_size)) {
+			if (id < PRIMITIVES) {
 				tmp += nbt_primitive_size[id];
 				goto check_and_continue;
 			}
@@ -82,7 +91,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			tmp += 4;
 
 			/* NOTE: TAG_END is allowed, but has a size of 0. */
-			if (id < sizeof(nbt_primitive_size)) {
+			if (id < PRIMITIVES) {
 				tmp += nbt_primitive_size[id] * n;
 				goto check_and_continue;
 			}
@@ -94,8 +103,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		}
 
 		if (id <= NBT_ARR_S64) {
-			ASSUME((id >= NBT_ARR_S32));
-			size_t size = (id == NBT_ARR_S32) ? 4 : 8;
+			size_t size = nbt_primitive_size[id];
 			s32 n = readbe32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += size * n + 5;
@@ -123,6 +131,199 @@ check_and_continue:
 	} while (depth != root);
 	return tmp - tag;
 }
+
+static ssize_t nbt_copy_str(u8 *buf, u8 *max,
+	const char *restrict str)
+{
+	u8 *head = buf+2;
+	size_t n = head - buf;
+	while (*str) {
+		if (head >= max)
+			return -MCX_EFAULT;
+		if (n > 0xFFFF)
+			return -MCX_EBIG;
+		*head++ = *str++;
+		n = head - buf;
+	}
+	writebe16(buf, n);
+	return n;
+}
+
+ssize_t nbt_addkey_end(u8 *buf, u8 *max)
+{
+	if ((ssize_t)(max - buf) < 0)
+		return -MCX_EINVAL;
+	u8 *head = buf;
+	*head++ = NBT_END;
+	return 1;
+}
+
+ssize_t nbt_addkey_int(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, u64 val)
+{
+	if ((ssize_t)(max - buf) < 0)
+		return -MCX_EINVAL;
+	u8 *head = buf;
+
+	if (name) {
+		*head = id;
+		head += 3;
+		ssize_t n = nbt_copy_str(head, max, name);
+		if (n < 0) return n;
+		head += n;
+	}
+
+	switch (id) {
+	case NBT_S8:
+		if (head+1 > max)
+			return -MCX_EFAULT;
+		*head++ = val;
+		break;
+	case NBT_S16:
+		if (head+2 > max)
+			return -MCX_EFAULT;
+		writebe16(head, val);
+		head += 2;
+		break;
+	case NBT_S32:
+		if (head+4 > max)
+			return -MCX_EFAULT;
+		writebe32(head, val);
+		head += 4;
+		break;
+	case NBT_S64:
+		if (head+8 > max)
+			return -MCX_EFAULT;
+		writebe64(head, val);
+		head += 8;
+		break;
+	default:
+		return -MCX_EINVAL;
+	}
+	return head - buf;
+}
+
+ssize_t nbt_addkey_float(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, f64 val)
+{
+	if ((ssize_t)(max - buf) < 0)
+		return -MCX_EINVAL;
+	u8 *head = buf;
+
+	if (name) {
+		*head = id;
+		head += 3;
+		ssize_t n = nbt_copy_str(head, max, name);
+		if (n < 0) return n;
+		head += n;
+	}
+
+	switch (id) {
+	case NBT_F32:
+		if (head+4 > max)
+			return -MCX_EFAULT;
+		writebe32(head, val);
+		head += 4;
+	case NBT_F64:
+		if (head+8 > max)
+			return -MCX_EFAULT;
+		writebe64(head, val);
+		head += 8;
+	default:
+		return -MCX_EINVAL;
+	}
+	return head - buf;
+}
+
+ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, s32 len,
+	const void *restrict dat)
+{
+	if (id != NBT_ARR_S8 && id != NBT_ARR_S32 && id != NBT_ARR_S64)
+		return -MCX_EINVAL;
+	if ((ssize_t)(max - buf) < 0)
+		return -MCX_EINVAL;
+	u8 *head = buf;
+
+	if (name) {
+		*head = id;
+		head += 3;
+		ssize_t n = nbt_copy_str(head, max, name);
+		if (n < 0) return n;
+		head += n;
+	}
+
+	int membsize = nbt_primitive_size[id];
+	size_t size = len * membsize;
+	if (head+4+size >= max)
+		return MCX_EFAULT;
+	writebe32(head, len);
+	head += 4;
+	switch (membsize) {
+	case 1:
+		memcpy(head, dat, size);
+		head += size;
+		break;
+	case 4:
+		while (len--) {
+			writebe32(head, *( u32*)dat);
+			head += 4;
+			dat  += 4;
+		}
+		break;
+	case 8:
+		while (len--) {
+			writebe64(head, *( u64*)dat);
+			head += 8;
+			dat  += 8;
+		}
+		break;
+	}
+	return head - buf;
+}
+
+ssize_t nbt_addkey_list(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, s32 len)
+{
+	if ((ssize_t)(max - buf) < 0)
+		return -MCX_EINVAL;
+	if (len < 0)
+		return -MCX_EINVAL;
+	u8 *head = buf;
+
+	if (name) {
+		*head = NBT_LIST;
+		head += 3;
+		ssize_t n = nbt_copy_str(head, max, name);
+		if (n < 0) return n;
+		head += n;
+	}
+
+	if (head+5 >= max)
+		return -MCX_EFAULT;
+	*head++ = id;
+	writebe32(head, len);
+	head += 4;
+	return head - buf;
+}
+
+ssize_t nbt_addkey_compound(u8 *buf, u8 *max,
+	const char *restrict name)
+{
+	if ((ssize_t)(max - buf) < 0)
+		return -MCX_EINVAL;
+	u8 *head = buf;
+
+	if (name) {
+		*head = NBT_LIST;
+		head += 3;
+		ssize_t n = nbt_copy_str(head, max, name);
+		if (n < 0) return n;
+		head += n;
+	}
+	return head - buf;
+}
+
 
 int nbt_tagnamecmp(const u8 *tag, const char *str)
 {

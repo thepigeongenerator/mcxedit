@@ -43,6 +43,60 @@ struct nbt_cache {
 ssize_t nbt_taglen(const mcx_u8 *restrict tag, size_t maxlen, int root,
 	struct nbt_cache *restrict cache);
 
+/* Writes an end tag at "buf".
+ * Returns the offset in bytes for the new "head" of "buf",
+ * and <0 for the error value is -error. */
+ssize_t nbt_addkey_end(u8 *buf, u8 *max);
+
+/* Writes an integer tag at "buf".
+ * "name" is a NUL-terminated string, if NULL no string nor tag is written.
+ * "id" sets the kind of integer.
+ * Returns the offset in bytes for the new "head" of "buf",
+ * and <0 for the error value is -error. */
+ssize_t nbt_addkey_int(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, u64 val);
+
+/* Writes an floating-point tag at "buf".
+ * "name" is a NUL-terminated string, if NULL no string nor tag is written.
+ * "id" sets the kind of floating-point tag.
+ * Returns the offset in bytes for the new "head" of "buf",
+ * and <0 for the error value is -error. */
+ssize_t nbt_addkey_float(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, f64 val);
+
+/* Writes an array tag at "buf".
+ * "name" is a NUL-terminated string, if NULL no string nor tag is written.
+ * "id"   sets the kind of array tag.
+ * "dat"  contains the payload.
+ * Returns the offset in bytes for the new "head" of "buf",
+ * and <0 for the error value is -error. */
+ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, s32 len,
+	const void *restrict dat);
+
+/* Writes a string tag at "buf".
+ * "name" is a NUL-terminated string, if NULL no string nor tag is written.
+ * "str" is the actual string payload.
+ * Returns the offset in bytes for the new "head" of "buf",
+ * and <0 for the error value is -error. */
+ssize_t nbt_addkey_str(u8 *buf, u8 *max,
+	const char *restrict name, const char *restrict str);
+
+/* Writes a list tag at "buf".
+ * "name" is a NUL-terminated string, if NULL no string nor tag is written.
+ * "id"  sets the list kind.
+ * Returns the offset in bytes for the new "head" of "buf",
+ * and <0 for the error value is -error. */
+ssize_t nbt_addkey_list(u8 *buf, u8 *max,
+	const char *restrict name, enum nbt_tagid id, s32 len);
+
+/* Writes a compound tag at "buf".
+ * "name" is a NUL-terminated string, if NULL no string nor tag is written.
+ * Returns the offset in bytes for the new "head" of "buf",
+ * and <0 for the error value is -error. */
+ssize_t nbt_addkey_compound(u8 *buf, u8 *max,
+	const char *restrict name);
+
 /* Compares the name of the fully-fledged tag
  * against a NUL-terminated string.
  * Returns 0 if both are equal. */
