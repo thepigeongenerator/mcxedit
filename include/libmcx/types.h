@@ -7,14 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* __CHECKER__ is defined by sparse, here we use it to define some
- * sparse-specific attributes we'll be using in this header. */
 #ifdef __CHECKER__
-#define BITWISE __attribute__((bitwise))
-#define FORCE   __attribute__((force))
+#define sparse_bitwise __attribute__((bitwise))
+#define sparse_force   __attribute__((force))
 #else
-#define BITWISE
-#define FORCE
+#define sparse_bitwise
+#define sparse_force
 #endif /* __CHECKER__ */
 
 typedef signed char        schar;
@@ -34,12 +32,12 @@ typedef uint16_t mcx_u16;
 typedef uint32_t mcx_u32;
 typedef uint64_t mcx_u64;
 
-typedef mcx_u16 BITWISE mcx_be16;
-typedef mcx_u32 BITWISE mcx_be32;
-typedef mcx_u64 BITWISE mcx_be64;
-typedef mcx_u16 BITWISE mcx_le16;
-typedef mcx_u32 BITWISE mcx_le32;
-typedef mcx_u64 BITWISE mcx_le64;
+typedef mcx_u16 sparse_bitwise mcx_be16;
+typedef mcx_u32 sparse_bitwise mcx_be32;
+typedef mcx_u64 sparse_bitwise mcx_be64;
+typedef mcx_u16 sparse_bitwise mcx_le16;
+typedef mcx_u32 sparse_bitwise mcx_le32;
+typedef mcx_u64 sparse_bitwise mcx_le64;
 
 #ifdef MCXEDIT_SOURCE
 typedef mcx_s8   s8;
