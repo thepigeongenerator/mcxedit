@@ -103,7 +103,7 @@ $(eval src/${mod}/%.o: CFLAGS   += ${${mod}-cflags})        \
 $(eval src/${mod}/${mod}.a: ${${mod}-obj})                  \
 )
 
-mcxedit-test mcxedit-test.exe: ${test-obj}
+mcxedit-test mcxedit-test.exe: ${test-obj} libmcx.a
 	@${msg} LD $@
 	$Q${CC} ${LDFLAGS} ${LDLIBS} -o $@ $^
 mcxedit: libmcx.so
