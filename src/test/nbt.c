@@ -55,9 +55,7 @@ static __maybe_unused ssize_t addkey_compound(u8 *buf, u8 *max,
 	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
 	return n;
 }
-#include <unistd.h>
-#include <sys/fcntl.h>
-#include <assert.h>
+
 static int nbt_taglen_list_of_lists(void)
 {
 	u8 *buf = nbtdat;
