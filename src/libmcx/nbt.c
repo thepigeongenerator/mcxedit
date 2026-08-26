@@ -132,29 +132,34 @@ check_and_continue:
 	return tmp - tag;
 }
 
+/* Copies "str" to "buf+2" without NUL-terminator.
+ * If the bytes copied exceeds 0xFFFF, -MCX_EBIG is returned.
+ * The bytes copied is written to the first two bytes of buf.
+ * Returns the offset in bytes from buf at which the data ended. */
 static ssize_t nbt_copy_str(u8 *buf, u8 *max,
 	const char *restrict str)
 {
 	u8 *head = buf+2;
-	size_t n = head - buf;
+	size_t n = 0;
 	while (*str) {
 		if (head >= max)
 			return -MCX_EFAULT;
-		if (n > 0xFFFF)
+		if (n >= 0xFFFF)
 			return -MCX_EBIG;
 		*head++ = *str++;
-		n = head - buf;
+		n++;
 	}
 	writebe16(buf, n);
-	return n;
+	return n+2;
 }
 
 ssize_t nbt_addkey_end(u8 *buf, u8 *max)
 {
 	if ((ssize_t)(max - buf) < 0)
 		return -MCX_EINVAL;
-	u8 *head = buf;
-	*head++ = NBT_END;
+	if (max == buf)
+		return -MCX_EFAULT;
+	*buf = NBT_END;
 	return 1;
 }
 
@@ -166,8 +171,9 @@ ssize_t nbt_addkey_int(u8 *buf, u8 *max,
 	u8 *head = buf;
 
 	if (name) {
-		*head = id;
-		head += 3;
+		if (buf == max)
+			return -MCX_EFAULT;
+		*head++ = id;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
 		head += n;
@@ -211,24 +217,28 @@ ssize_t nbt_addkey_float(u8 *buf, u8 *max,
 	u8 *head = buf;
 
 	if (name) {
-		*head = id;
-		head += 3;
+		if (buf == max)
+			return -MCX_EFAULT;
+		*head++ = id;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
 		head += n;
 	}
 
+	union {f32 f32; u32 u32;} flt = {.f32 = val};
+	union {f64 f64; u64 u64;} dbl = {.f64 = val};
+
 	switch (id) {
 	case NBT_F32:
 		if (head+4 > max)
 			return -MCX_EFAULT;
-		writebe32(head, val);
+		writebe32(head, flt.u32);
 		head += 4;
 		break;
 	case NBT_F64:
 		if (head+8 > max)
 			return -MCX_EFAULT;
-		writebe64(head, val);
+		writebe64(head, dbl.u64);
 		head += 8;
 		break;
 	default:
@@ -245,11 +255,14 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 		return -MCX_EINVAL;
 	if ((ssize_t)(max - buf) < 0)
 		return -MCX_EINVAL;
+	if (len < 0)
+		return -MCX_EINVAL;
 	u8 *head = buf;
 
 	if (name) {
-		*head = id;
-		head += 3;
+		if (buf == max)
+			return -MCX_EFAULT;
+		*head++ = id;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
 		head += n;
@@ -257,8 +270,8 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 
 	int membsize = nbt_primitive_size[id];
 	size_t size = len * membsize;
-	if (head+4+size >= max)
-		return MCX_EFAULT;
+	if (head+4+size > max)
+		return -MCX_EFAULT;
 	writebe32(head, len);
 	head += 4;
 	switch (membsize) {
@@ -292,17 +305,18 @@ ssize_t nbt_addkey_str(u8 *buf, u8 *max,
 	u8 *head = buf;
 
 	if (name) {
-		*head = NBT_LIST;
-		head += 3;
+		if (buf == max)
+			return -MCX_EFAULT;
+		*head++ = NBT_STR;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
 		head += n;
 	}
 
-	ssize_t n = nbt_copy_str(head, max, name);
+	ssize_t n = nbt_copy_str(head, max, str);
 	if (n < 0) return n;
-	head += n;
-	return head - buf;
+	n += head-buf;
+	return n;
 }
 
 ssize_t nbt_addkey_list(u8 *buf, u8 *max,
@@ -315,14 +329,15 @@ ssize_t nbt_addkey_list(u8 *buf, u8 *max,
 	u8 *head = buf;
 
 	if (name) {
-		*head = NBT_LIST;
-		head += 3;
+		if (buf == max)
+			return -MCX_EFAULT;
+		*head++ = NBT_LIST;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
 		head += n;
 	}
 
-	if (head+5 >= max)
+	if (head+5 > max)
 		return -MCX_EFAULT;
 	*head++ = id;
 	writebe32(head, len);
@@ -338,15 +353,15 @@ ssize_t nbt_addkey_compound(u8 *buf, u8 *max,
 	u8 *head = buf;
 
 	if (name) {
-		*head = NBT_LIST;
-		head += 3;
+		if (buf == max)
+			return -MCX_EFAULT;
+		*head++ = NBT_COMPOUND;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
-		head += n;
+		return ++n;
 	}
-	return head - buf;
+	return 0;
 }
-
 
 int nbt_tagnamecmp(const u8 *tag, const char *str)
 {
