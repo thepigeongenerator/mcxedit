@@ -284,6 +284,27 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 	return head - buf;
 }
 
+ssize_t nbt_addkey_str(u8 *buf, u8 *max,
+	const char *restrict name, const char *restrict str)
+{
+	if ((ssize_t)(max - buf) < 0)
+		return -MCX_EINVAL;
+	u8 *head = buf;
+
+	if (name) {
+		*head = NBT_LIST;
+		head += 3;
+		ssize_t n = nbt_copy_str(head, max, name);
+		if (n < 0) return n;
+		head += n;
+	}
+
+	ssize_t n = nbt_copy_str(head, max, name);
+	if (n < 0) return n;
+	head += n;
+	return head - buf;
+}
+
 ssize_t nbt_addkey_list(u8 *buf, u8 *max,
 	const char *restrict name, enum nbt_tagid id, s32 len)
 {
