@@ -40,7 +40,7 @@ off_t mcx_defrag(struct mcx *mcx, off_t size);
  * sectors at the end, or that overlapping values are present.
  * If this value is higher than the actual file size,
  * then corruption has taken place. */
-off_t mcx_calcsize(const struct mcx *mcx) PURE;
+off_t mcx_calcsize(const struct mcx *mcx) MCX_PURE;
 
 /* Computes the minimum size in bytes required for the entire .mcX file,
  * according to the table.
@@ -51,6 +51,6 @@ off_t mcx_calcsize(const struct mcx *mcx) PURE;
  * of the actual size due to the presence of unused sectors.
  * In the edge case of overlapping sectors, this value may be larger
  * than the actual file size. */
-off_t mcx_sumsize(const struct mcx *mcx) PURE;
+off_t mcx_sumsize(const struct mcx *mcx) MCX_PURE;
 
 #endif /* LIBMCX_MCX_H */

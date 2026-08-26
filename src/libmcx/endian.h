@@ -62,7 +62,7 @@
 #endif
 
 /* Reads a 16-bit integer from an unaligned buffer. */
-static inline PURE u16 read16(const u8 *buf)
+static inline MCX_PURE u16 read16(const u8 *buf)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
 	return *(u16 *)buf;
@@ -72,7 +72,7 @@ static inline PURE u16 read16(const u8 *buf)
 }
 
 /* Reads and bswaps a 16-bit integer from an unaligned buffer. */
-static inline PURE u16 readbswap16(const u8 *buf)
+static inline MCX_PURE u16 readbswap16(const u8 *buf)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
 	return __builtin_bswap16(*(u16 *)buf);
@@ -102,7 +102,7 @@ static inline void writebswap16(u8 *buf, u16 v)
 }
 
 /* Reads a 32-bit integer from an unaligned buffer. */
-static inline PURE u32 read32(const u8 *buf)
+static inline MCX_PURE u32 read32(const u8 *buf)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
 	return *(u32 *)buf;
@@ -113,7 +113,7 @@ static inline PURE u32 read32(const u8 *buf)
 }
 
 /* Reads and bswaps a 32-bit integer from an unaligned buffer. */
-static inline PURE u32 readbswap32(const u8 *buf)
+static inline MCX_PURE u32 readbswap32(const u8 *buf)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
 	return __builtin_bswap32(*(be32 *)buf);
@@ -146,7 +146,7 @@ static inline void writebswap32(u8 *buf, u32 v)
 }
 
 /* Reads a 64-bit integer from an unaligned buffer. */
-static inline PURE u64 read64(const u8 *buf)
+static inline MCX_PURE u64 read64(const u8 *buf)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
 	return *(u64 *)buf;
@@ -159,7 +159,7 @@ static inline PURE u64 read64(const u8 *buf)
 }
 
 /* Reads and bswaps a 64-bit integer from an unaligned buffer. */
-static inline PURE u64 readbswap64(const u8 *buf)
+static inline MCX_PURE u64 readbswap64(const u8 *buf)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
 	return __builtin_bswap64(*(u64 *)buf);

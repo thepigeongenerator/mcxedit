@@ -7,13 +7,13 @@
 #include <libmcx/atrb.h>
 #include <stdarg.h>
 
-void verr(int code, const char *fmt, va_list args) COLD NORET;
-void verrx(int code, const char *fmt, va_list args) COLD NORET;
-void vwarn(const char *fmt, va_list args) COLD;
-void vwarnx(const char *fmt, va_list args) COLD;
-void err(int code, const char *fmt, ...) COLD FORMAT((printf, 2, 3)) NORET;
-void errx(int code, const char *fmt, ...) COLD FORMAT((printf, 2, 3)) NORET;
-void warn(const char *fmt, ...) COLD FORMAT((printf, 1, 2));
-void warnx(const char *fmt, ...) COLD FORMAT((printf, 1, 2));
+void verr(int code, const char *fmt, va_list args)  MCX_COLD MCX_NORET;
+void verrx(int code, const char *fmt, va_list args) MCX_COLD MCX_NORET;
+void vwarn(const char *fmt, va_list args)  MCX_COLD;
+void vwarnx(const char *fmt, va_list args) MCX_COLD;
+void err(int code, const char *fmt, ...)  MCX_COLD MCX_NORET MCX_PRINTF(2, 3);
+void errx(int code, const char *fmt, ...) MCX_COLD MCX_NORET MCX_PRINTF(2, 3);
+void warn(const char *fmt, ...)  MCX_COLD MCX_PRINTF(1, 2);
+void warnx(const char *fmt, ...) MCX_COLD MCX_PRINTF(1, 2);
 
 #endif /* MCXEDIT_ERR_H */

@@ -15,6 +15,6 @@
 
 /* Returns a pointer to the error string,
  * or NULL if the error code was invalid. */
-const char *mcx_errstr(int code) CONST COLD;
+const char *mcx_errstr(int code) MCX_CONST MCX_COLD;
 
 #endif /* LIBMCX_ERR_H */
