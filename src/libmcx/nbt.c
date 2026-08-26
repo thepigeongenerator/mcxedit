@@ -224,11 +224,13 @@ ssize_t nbt_addkey_float(u8 *buf, u8 *max,
 			return -MCX_EFAULT;
 		writebe32(head, val);
 		head += 4;
+		break;
 	case NBT_F64:
 		if (head+8 > max)
 			return -MCX_EFAULT;
 		writebe64(head, val);
 		head += 8;
+		break;
 	default:
 		return -MCX_EINVAL;
 	}
