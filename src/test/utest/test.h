@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define TESTLOG_MSG 0x100
+
 struct test {
 	int (*test)(void);
 	const char *name;
@@ -48,8 +50,9 @@ __attribute__((__format__(printf, 3, 4)))
 int test_printf(int res, const char *func, const char *fmt, ...);
 int test_vprintf(int res, const char *func, const char *fmt, va_list args);
 
-/* Short-hand for test_printf, omitting the function name. */
+/* Short-hands for test_printf. */
 #define testlog(res, ...) test_printf(res, __func__, __VA_ARGS__)
+#define testmsg(...)      test_printf(TESTLOG_MSG, __func__, __VA_ARGS__)
 
 /* Useful for chaining conditions, whilst having logging on each step. */
 #define testeval(cond) (testlog(!(cond), #cond "\n"), cond)
@@ -81,10 +84,13 @@ int test_main(int argc, char **argv)
 
 int test_vprintf(int res, const char *func, const char *fmt, va_list args)
 {
-	const char *str = res
-		? " \033[1;31mFAIL\033[0m  %s\t"
-		: " \033[1;32m OK \033[0m  %s\t";
-	return printf(str, func) +
+	const char *status = " \033[1;32m OK \033[0m  %s\t";
+	if (res) {
+		status = res == TESTLOG_MSG
+			? " \033[36minfo\033[0m  %s\t"
+			: " \033[1;31mFAIL\033[0m  %s\t";
+	}
+	return printf(status, func) +
 		vprintf(fmt, args);
 }
 int test_printf(int res, const char *func, const char *fmt, ...)
