@@ -9,21 +9,21 @@ static struct nbt_cache cache;
 static __maybe_unused ssize_t addkey_end(u8 *buf, u8 *max)
 {
 	ssize_t n = nbt_addkey_end(buf, max);
-	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
+	if (n<0) testmsg("%s\n", mcx_errstr(-n));
 	return n;
 }
 static __maybe_unused ssize_t addkey_int(u8 *buf, u8 *max,
 	const char *restrict name, enum nbt_tagid id, u64 val)
 {
 	ssize_t n = nbt_addkey_int(buf, max, name, id, val);
-	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
+	if (n<0) testmsg("%s\n", mcx_errstr(-n));
 	return n;
 }
 static __maybe_unused ssize_t addkey_float(u8 *buf, u8 *max,
 	const char *restrict name, enum nbt_tagid id, f64 val)
 {
 	ssize_t n = nbt_addkey_float(buf, max, name, id, val);
-	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
+	if (n<0) testmsg("%s\n", mcx_errstr(-n));
 	return n;
 }
 static __maybe_unused ssize_t addkey_arr(u8 *buf, u8 *max,
@@ -31,28 +31,28 @@ static __maybe_unused ssize_t addkey_arr(u8 *buf, u8 *max,
 	const void *restrict dat)
 {
 	ssize_t n = nbt_addkey_arr(buf, max, name, id, len, dat);
-	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
+	if (n<0) testmsg("%s\n", mcx_errstr(-n));
 	return n;
 }
 static __maybe_unused ssize_t addkey_str(u8 *buf, u8 *max,
 	const char *restrict name, const char *restrict str)
 {
 	ssize_t n = nbt_addkey_str(buf, max, name, str);
-	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
+	if (n<0) testmsg("%s\n", mcx_errstr(-n));
 	return n;
 }
 static __maybe_unused ssize_t addkey_list(u8 *buf, u8 *max,
 	const char *restrict name, enum nbt_tagid id, s32 len)
 {
 	ssize_t n = nbt_addkey_list(buf, max, name, id, len);
-	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
+	if (n<0) testmsg("%s\n", mcx_errstr(-n));
 	return n;
 }
 static __maybe_unused ssize_t addkey_compound(u8 *buf, u8 *max,
 	const char *restrict name)
 {
 	ssize_t n = nbt_addkey_compound(buf, max, name);
-	if (n<0) testlog(-1, "%s\n", mcx_errstr(-n));
+	if (n<0) testmsg("%s\n", mcx_errstr(-n));
 	return n;
 }
 
@@ -79,7 +79,7 @@ static int nbt_taglen_list_of_lists(void)
 		testlog(-1, "received error: %s\n", mcx_errstr(-acquired));
 		return -1;
 	}
-	testlog(-1, "0x%zX 0x%zX\n", expected, acquired);
+	testmsg("expected: 0x%zu acquired: 0x%zu\n", expected, acquired);
 	return !(expected == acquired);
 }
 test_register(nbt_taglen_list_of_lists);
