@@ -7,6 +7,14 @@
 #include <libmcx/atrb.h>
 #include <libmcx/types.h>
 
+/* Mostly copied from Linux using:
+ * $ grep HAVE_EFFICIENT_UNALIGNED_ACCESS arch/.../Kconfig
+ */
+#if defined(__i386__) || defined(__x86_64__) ||\
+	defined(__aarch64__) || defined(__riscv__)
+#define MAY_UNALIGNED_ACCESS 1
+#endif
+
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define cvt_le16toh(x) ((sparse_force u16)(le16)x)
 #define cvt_le32toh(x) ((sparse_force u32)(le32)x)
