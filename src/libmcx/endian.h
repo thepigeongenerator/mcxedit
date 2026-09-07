@@ -124,7 +124,7 @@ static inline MCX_PURE u32 read32(const u8 *buf)
 static inline MCX_PURE u32 readbswap32(const u8 *buf)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
-	return __builtin_bswap32(*(be32 *)buf);
+	return __builtin_bswap32(*(u32 *)buf);
 #else
 	return (u32)buf[3] << 000 | (u32)buf[2] << 010 |
 	       (u32)buf[1] << 020 | (u32)buf[0] << 030;
