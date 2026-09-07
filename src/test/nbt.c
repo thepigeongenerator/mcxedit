@@ -79,7 +79,7 @@ static int nbt_taglen_list_of_lists(void)
 		testlog(-1, "received error: %s\n", mcx_errstr(-acquired));
 		return -1;
 	}
-	testmsg("expected: 0x%zu acquired: 0x%zu\n", expected, acquired);
+	testmsg("expected: %zu, acquired: %zu\n", expected, acquired);
 	return !(expected == acquired);
 }
 test_register(nbt_taglen_list_of_lists);
