@@ -103,7 +103,7 @@ static inline void write16(u8 *buf, u16 v)
 static inline void writebswap16(u8 *buf, u16 v)
 {
 #if defined(MAY_UNALIGNED_ACCESS)
-	*(u16 *)buf = __builtin_bswap16(*(u16 *)buf);
+	*(u16 *)buf = __builtin_bswap16(v);
 #else
 	buf[1] = v >> 000; buf[0] = v >> 010;
 #endif
