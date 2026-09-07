@@ -121,8 +121,8 @@ libmcx.so libmcx.dll: ${libmcx-obj}
 	$Q${AR} ${ARFLAGS} -sc $@ $^
 
 # Generic rule Definitions
+# Used for debugging the assembly of a given translation unit.
 %.s: %.c
-	# Used for debugging the assembly of a given translation unit.
 	@${msg} CC $@
 	$Q${CC} -S ${CPPFLAGS} ${CFLAGS} -o $@ $<
 %.o: %.c
