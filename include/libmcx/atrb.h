@@ -77,6 +77,8 @@
 #define fallthrough
 #endif /* __has_attribute(__fallthrough__) */
 
+#define unlikely(x) __builtin_expect(!!(x), 0)
+#define   likely(x) __builtin_expect(!!(x), 1)
 #endif /* MCXEDIT_SOURCE */
 
 #else
