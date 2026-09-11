@@ -54,7 +54,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			/* Skip the tag name. */
 			if (tmp+2 > max)
 				return -MCX_EFAULT;
-			tmp += readbe16(tmp) + 2;
+			tmp += unaligned_read_be16(tmp) + 2;
 
 			if (id < PRIMITIVES) {
 				tmp += nbt_primitive_size[id];
@@ -73,7 +73,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			if (tmp+4 > max)
 				return -MCX_EFAULT;
 
-			n = readbe32(tmp);
+			n = unaligned_read_be32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += n + 4;
 			goto check_and_continue;
@@ -81,7 +81,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			if (tmp+2 > max)
 				return -MCX_EFAULT;
 
-			tmp += readbe16(tmp) + 2;
+			tmp += unaligned_read_be16(tmp) + 2;
 			goto check_and_continue;
 		case NBT_LIST:
 			/* WARN: Setting ID to current depth? */
@@ -95,7 +95,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			 * Then again, it wouldn't cause much issue. */
 
 			id = *tmp++;
-			n = readbe32(tmp);
+			n = unaligned_read_be32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += 4;
 
@@ -117,7 +117,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			if (tmp+4 > max)
 				return -MCX_EFAULT;
 
-			s32 n = readbe32(tmp);
+			s32 n = unaligned_read_be32(tmp);
 			if (n < 0) return -MCX_ERANGE;
 			tmp += size * n + 4;
 			goto check_and_continue;
@@ -162,8 +162,7 @@ static ssize_t nbt_copy_str(u8 *buf, u8 *max,
 		*head++ = *str++;
 		n++;
 	}
-	writebe16(buf, n);
-	return n+2;
+	return n + unaligned_write_be16(buf, n);
 }
 
 ssize_t nbt_addkey_end(u8 *buf, u8 *max)
@@ -201,20 +200,17 @@ ssize_t nbt_addkey_int(u8 *buf, u8 *max,
 	case NBT_S16:
 		if (head+2 > max)
 			return -MCX_EFAULT;
-		writebe16(head, val);
-		head += 2;
+		head += unaligned_write_be16(head, val);
 		break;
 	case NBT_S32:
 		if (head+4 > max)
 			return -MCX_EFAULT;
-		writebe32(head, val);
-		head += 4;
+		head += unaligned_write_be32(head, val);
 		break;
 	case NBT_S64:
 		if (head+8 > max)
 			return -MCX_EFAULT;
-		writebe64(head, val);
-		head += 8;
+		head += unaligned_write_be64(head, val);
 		break;
 	default:
 		return -MCX_EINVAL;
@@ -245,13 +241,13 @@ ssize_t nbt_addkey_float(u8 *buf, u8 *max,
 	case NBT_F32:
 		if (head+4 > max)
 			return -MCX_EFAULT;
-		writebe32(head, flt.u32);
+		unaligned_write_be32(head, flt.u32);
 		head += 4;
 		break;
 	case NBT_F64:
 		if (head+8 > max)
 			return -MCX_EFAULT;
-		writebe64(head, dbl.u64);
+		unaligned_write_be64(head, dbl.u64);
 		head += 8;
 		break;
 	default:
@@ -285,7 +281,7 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 	size_t size = len * membsize;
 	if (head+4+size > max)
 		return -MCX_EFAULT;
-	writebe32(head, len);
+	unaligned_write_be32(head, len);
 	head += 4;
 	switch (membsize) {
 	case 1:
@@ -294,14 +290,14 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 		break;
 	case 4:
 		while (len--) {
-			writebe32(head, *( u32*)dat);
+			unaligned_write_be32(head, *( u32*)dat);
 			head += 4;
 			dat  += 4;
 		}
 		break;
 	case 8:
 		while (len--) {
-			writebe64(head, *( u64*)dat);
+			unaligned_write_be64(head, *( u64*)dat);
 			head += 8;
 			dat  += 8;
 		}
@@ -353,7 +349,7 @@ ssize_t nbt_addkey_list(u8 *buf, u8 *max,
 	if (head+5 > max)
 		return -MCX_EFAULT;
 	*head++ = id;
-	writebe32(head, len);
+	unaligned_write_be32(head, len);
 	head += 4;
 	return head - buf;
 }
@@ -378,7 +374,7 @@ ssize_t nbt_addkey_compound(u8 *buf, u8 *max,
 
 int nbt_tagnamecmp(const u8 *tag, const char *str)
 {
-	u16 n = readbe16(++tag);
+	u16 n = unaligned_read_be16(++tag);
 	tag += 2;
 	int v;
 

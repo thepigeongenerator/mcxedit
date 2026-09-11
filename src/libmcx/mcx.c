@@ -25,7 +25,7 @@ off_t mcx_repair(struct mcx *mcx, off_t size)
 	u32   max = 0, tmp;
 	do {
 		if (!*tbl) continue; /* TODO: may be faster without? */
-		tmp   = cvt_be32toh(*tbl);
+		tmp   = be32_to_host(*tbl);
 		chpos = tmp >> 8;
 		chlen = tmp & 0xFF;
 		chend = (chpos + chlen) * MCX_SECTOR_SIZE;
@@ -62,7 +62,7 @@ off_t mcx_defrag(struct mcx *mcx, off_t size)
 	u32  *chunk = chunks;
 	be32 *tbl   = mcx->table;
 	for (int i = 0; i < MCX_TABLE_ITEMS; ++i) {
-		*chunk++ = cvt_be32toh(tbl[i]);
+		*chunk++ = be32_to_host(tbl[i]);
 		*chunk++ = i;
 	}
 	qsort(chunks, MCX_TABLE_ITEMS, sizeof(*chunks) * 2, mcx_defrag_compar);
@@ -88,7 +88,7 @@ off_t mcx_defrag(struct mcx *mcx, off_t size)
 			goto next_table_item;
 
 		memmove(mcx + fpos, mcx + fchpos, fchlen);
-		tbl[chunk[1]] = cvt_htobe32(chlen | (pos << 8));
+		tbl[chunk[1]] = host_to_be32(chlen | (pos << 8));
 next_table_item:
 		pos += chlen;
 	} while ((chunk += 2) < end);
@@ -104,7 +104,7 @@ off_t mcx_calcsize(const struct mcx *mcx)
 	const be32 *end = tbl + MCX_TABLE_ITEMS;
 	u32         max = 0, tmp;
 	do {
-		tmp = cvt_be32toh(*tbl);
+		tmp = be32_to_host(*tbl);
 		max = max < tmp ? tmp : max;
 	} while (++tbl < end);
 	return ((max >> 8) + (max & 0xFF)) * MCX_SECTOR_SIZE;
