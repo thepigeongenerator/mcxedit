@@ -5,16 +5,18 @@
 #define LIBMCX_ERROR_H 1
 #include <libmcx/stddef.h>
 
-/* libmcx error codes */
-#define MCX_ETAG   1 /* Invalid NBT tag */
-#define MCX_ERANGE 2 /* Out of range */
-#define MCX_EITER  3 /* Too many iterations */
-#define MCX_EBIG   4 /* Result too large */
-#define MCX_EFAULT 5 /* Bad address */
-#define MCX_EINVAL 6 /* Invalid argument */
+/*
+ * Error values are defined sequentially from 4096 (0x1000) to not collide
+ * with any pre-existing error numbers.
+ * Linux in particular reserves the last page (-0x1000) for error values, using
+ * values lower (or when defining, higher) should be safe.
+ */
+
+#define EMCXTAG  0x1000 /* Invalid binary tag */
+#define EMCXITER 0x1001 /* Too many iterations */
 
 /* Returns a pointer to the error string,
  * or NULL if the error code was invalid. */
-const char *mcx_errstr(int code) MCX_CONST MCX_COLD;
+const char *mcx_strerror(int code) MCX_CONST MCX_COLD;
 
 #endif /* LIBMCX_ERROR_H */

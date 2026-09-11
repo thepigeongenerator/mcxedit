@@ -4,19 +4,20 @@
 #include <libmcx/error.h>
 
 #include <stddef.h>
+#include <string.h>
 
-static const char *errors[] = {
-	[0] = "Success",
-	[MCX_ETAG]   = "Invalid NBT tag",
-	[MCX_ERANGE] = "Out of range",
-	[MCX_EITER]  = "Too many iterations",
-	[MCX_EBIG]   = "Result too large",
-	[MCX_EFAULT] = "Bad address",
-	[MCX_EINVAL] = "Invalid argument",
+static const char *mcx_errors[] = {
+	[-0x1000+EMCXTAG]  = "Invalid binary tag",
+	[-0x1000+EMCXITER] = "Too many iterations",
 };
-const char *mcx_errstr(int code)
+
+const char *mcx_strerror(int code)
 {
-	if (code < 0 || code > sizeof(errors) / sizeof(*errors))
-		return NULL;
-	return errors[code];
+	if (code >= 0x1000) {
+		code -= 0x1000;
+		if (likely(code < lengthof(mcx_errors)))
+			return mcx_errors[code];
+		code += 0x1000;
+	}
+	return strerror(code);
 }

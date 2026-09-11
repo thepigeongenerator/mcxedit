@@ -34,9 +34,9 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 	struct nbt_cache *restrict cache)
 {
 	if (0 > root || root >= NBT_NEST_MAX)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	if ((ssize_t)maxlen < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 
 	int depth = root;
 	u8 id;
@@ -53,7 +53,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 
 			/* Skip the tag name. */
 			if (tmp+2 > max)
-				return -MCX_EFAULT;
+				return -EFAULT;
 			tmp += unaligned_read_be16(tmp) + 2;
 
 			if (id < PRIMITIVES) {
@@ -71,15 +71,15 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		switch (id) {
 		case NBT_ARR_S8:
 			if (tmp+4 > max)
-				return -MCX_EFAULT;
+				return -EFAULT;
 
 			n = unaligned_read_be32(tmp);
-			if (n < 0) return -MCX_ERANGE;
+			if (n < 0) return -EOVERFLOW;
 			tmp += n + 4;
 			goto check_and_continue;
 		case NBT_STR:
 			if (tmp+2 > max)
-				return -MCX_EFAULT;
+				return -EFAULT;
 
 			tmp += unaligned_read_be16(tmp) + 2;
 			goto check_and_continue;
@@ -88,7 +88,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			cache->tags[depth] = id;
 
 			if (tmp+5 > max)
-				return -MCX_EFAULT;
+				return -EFAULT;
 
 			/* NOTE: May want to increment and check here.
 			 * Since we'd skip the limit if it's a primitive.
@@ -96,7 +96,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 
 			id = *tmp++;
 			n = unaligned_read_be32(tmp);
-			if (n < 0) return -MCX_ERANGE;
+			if (n < 0) return -EOVERFLOW;
 			tmp += 4;
 
 			/* NOTE: TAG_END is allowed, but has a size of 0. */
@@ -105,7 +105,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 				goto check_and_continue;
 			}
 			cache->lens[depth] = n;
-			if (tmp > max) return -MCX_EFAULT;
+			if (tmp > max) return -EFAULT;
 			goto depth_increase;
 		case NBT_COMPOUND:
 			goto depth_increase;
@@ -115,18 +115,18 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			size_t size = nbt_primitive_size[id];
 
 			if (tmp+4 > max)
-				return -MCX_EFAULT;
+				return -EFAULT;
 
 			s32 n = unaligned_read_be32(tmp);
-			if (n < 0) return -MCX_ERANGE;
+			if (n < 0) return -EOVERFLOW;
 			tmp += size * n + 4;
 			goto check_and_continue;
 		}
-		return -MCX_ETAG;
+		return -EMCXTAG;
 depth_increase:
 		depth++;
 		if (depth >= NBT_NEST_MAX)
-			return -MCX_EITER;
+			return -EMCXITER;
 		/* This is safe for compound tags, even though it isn't used.
 		 * It mainly simplifies the code branches. */
 		cache->tags[depth] = id;
@@ -140,13 +140,13 @@ check_and_continue:
 		 * but means moving to the end of the buffer,
 		 * will this result in EFAULT? */
 		if (tmp < max) continue;
-		return -MCX_EFAULT;
+		return -EFAULT;
 	} while (depth != root);
 	return tmp - tag;
 }
 
 /* Copies "str" to "buf+2" without NUL-terminator.
- * If the bytes copied exceeds 0xFFFF, -MCX_EBIG is returned.
+ * If the bytes copied exceeds 0xFFFF, -EINVAL is returned.
  * The bytes copied is written to the first two bytes of buf.
  * Returns the offset in bytes from buf at which the data ended. */
 static ssize_t nbt_copy_str(u8 *buf, u8 *max,
@@ -156,9 +156,9 @@ static ssize_t nbt_copy_str(u8 *buf, u8 *max,
 	size_t n = 0;
 	while (*str) {
 		if (head >= max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		if (n >= 0xFFFF)
-			return -MCX_EBIG;
+			return -EINVAL;
 		*head++ = *str++;
 		n++;
 	}
@@ -168,9 +168,9 @@ static ssize_t nbt_copy_str(u8 *buf, u8 *max,
 ssize_t nbt_addkey_end(u8 *buf, u8 *max)
 {
 	if ((ssize_t)(max - buf) < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	if (max == buf)
-		return -MCX_EFAULT;
+		return -EFAULT;
 	*buf = NBT_END;
 	return 1;
 }
@@ -179,12 +179,12 @@ ssize_t nbt_addkey_int(u8 *buf, u8 *max,
 	const char *restrict name, enum nbt_tagid id, u64 val)
 {
 	if ((ssize_t)(max - buf) < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	u8 *head = buf;
 
 	if (name) {
 		if (buf == max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		*head++ = id;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
@@ -194,26 +194,26 @@ ssize_t nbt_addkey_int(u8 *buf, u8 *max,
 	switch (id) {
 	case NBT_S8:
 		if (head+1 > max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		*head++ = val;
 		break;
 	case NBT_S16:
 		if (head+2 > max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		head += unaligned_write_be16(head, val);
 		break;
 	case NBT_S32:
 		if (head+4 > max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		head += unaligned_write_be32(head, val);
 		break;
 	case NBT_S64:
 		if (head+8 > max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		head += unaligned_write_be64(head, val);
 		break;
 	default:
-		return -MCX_EINVAL;
+		return -EINVAL;
 	}
 	return head - buf;
 }
@@ -222,12 +222,12 @@ ssize_t nbt_addkey_float(u8 *buf, u8 *max,
 	const char *restrict name, enum nbt_tagid id, f64 val)
 {
 	if ((ssize_t)(max - buf) < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	u8 *head = buf;
 
 	if (name) {
 		if (buf == max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		*head++ = id;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
@@ -240,18 +240,18 @@ ssize_t nbt_addkey_float(u8 *buf, u8 *max,
 	switch (id) {
 	case NBT_F32:
 		if (head+4 > max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		unaligned_write_be32(head, flt.u32);
 		head += 4;
 		break;
 	case NBT_F64:
 		if (head+8 > max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		unaligned_write_be64(head, dbl.u64);
 		head += 8;
 		break;
 	default:
-		return -MCX_EINVAL;
+		return -EINVAL;
 	}
 	return head - buf;
 }
@@ -261,16 +261,16 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 	const void *restrict dat)
 {
 	if (id != NBT_ARR_S8 && id != NBT_ARR_S32 && id != NBT_ARR_S64)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	if ((ssize_t)(max - buf) < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	if (len < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	u8 *head = buf;
 
 	if (name) {
 		if (buf == max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		*head++ = id;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
@@ -280,7 +280,7 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 	int membsize = nbt_primitive_size[id];
 	size_t size = len * membsize;
 	if (head+4+size > max)
-		return -MCX_EFAULT;
+		return -EFAULT;
 	unaligned_write_be32(head, len);
 	head += 4;
 	switch (membsize) {
@@ -310,12 +310,12 @@ ssize_t nbt_addkey_str(u8 *buf, u8 *max,
 	const char *restrict name, const char *restrict str)
 {
 	if ((ssize_t)(max - buf) < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	u8 *head = buf;
 
 	if (name) {
 		if (buf == max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		*head++ = NBT_STR;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
@@ -332,14 +332,14 @@ ssize_t nbt_addkey_list(u8 *buf, u8 *max,
 	const char *restrict name, enum nbt_tagid id, s32 len)
 {
 	if ((ssize_t)(max - buf) < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	if (len < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	u8 *head = buf;
 
 	if (name) {
 		if (buf == max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		*head++ = NBT_LIST;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
@@ -347,7 +347,7 @@ ssize_t nbt_addkey_list(u8 *buf, u8 *max,
 	}
 
 	if (head+5 > max)
-		return -MCX_EFAULT;
+		return -EFAULT;
 	*head++ = id;
 	unaligned_write_be32(head, len);
 	head += 4;
@@ -358,12 +358,12 @@ ssize_t nbt_addkey_compound(u8 *buf, u8 *max,
 	const char *restrict name)
 {
 	if ((ssize_t)(max - buf) < 0)
-		return -MCX_EINVAL;
+		return -EINVAL;
 	u8 *head = buf;
 
 	if (name) {
 		if (buf == max)
-			return -MCX_EFAULT;
+			return -EFAULT;
 		*head++ = NBT_COMPOUND;
 		ssize_t n = nbt_copy_str(head, max, name);
 		if (n < 0) return n;
