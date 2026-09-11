@@ -6,7 +6,7 @@
 #include "endian.h"
 #include <assert.h>
 #include <errno.h>
-#include <libmcx/err.h>
+#include <libmcx/error.h>
 #include <libmcx/types.h>
 #include <stddef.h>
 #include <string.h>

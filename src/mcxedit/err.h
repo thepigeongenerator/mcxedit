@@ -4,7 +4,7 @@
 #ifndef MCXEDIT_ERR_H
 #define MCXEDIT_ERR_H 1
 
-#include <libmcx/atrb.h>
+#include <libmcx/stddef.h>
 #include <stdarg.h>
 
 void verr(int code, const char *fmt, va_list args)  MCX_COLD MCX_NORET;

@@ -3,17 +3,23 @@
  */
 #ifndef LIBMCX_TYPES_H
 #define LIBMCX_TYPES_H 1
-
-#include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
+
+#ifdef MCXEDIT_SOURCE
+#undef bool
+typedef _Bool bool;
 
 #ifdef __CHECKER__
-#define sparse_bitwise __attribute__((bitwise))
-#define sparse_force   __attribute__((force))
+#define __bitwise __attribute__((bitwise))
+#define __force   __attribute__((force))
 #else
-#define sparse_bitwise
-#define sparse_force
+#define __bitwise
+#define __force
 #endif /* __CHECKER__ */
+#else
+#include <stdbool.h>
+#endif /* MCXEDIT_SOURCE */
 
 typedef signed char        schar;
 typedef long long          llong;
@@ -23,44 +29,26 @@ typedef unsigned int       uint;
 typedef unsigned long      ulong;
 typedef unsigned long long ullong;
 
-typedef int8_t   mcx_s8;
-typedef int16_t  mcx_s16;
-typedef int32_t  mcx_s32;
-typedef int64_t  mcx_s64;
-typedef uint8_t  mcx_u8;
-typedef uint16_t mcx_u16;
-typedef uint32_t mcx_u32;
-typedef uint64_t mcx_u64;
-
-typedef mcx_u16 sparse_bitwise mcx_be16;
-typedef mcx_u32 sparse_bitwise mcx_be32;
-typedef mcx_u64 sparse_bitwise mcx_be64;
-typedef mcx_u16 sparse_bitwise mcx_le16;
-typedef mcx_u32 sparse_bitwise mcx_le32;
-typedef mcx_u64 sparse_bitwise mcx_le64;
+struct mcx;
 
 #ifdef MCXEDIT_SOURCE
-typedef mcx_s8   s8;
-typedef mcx_s16  s16;
-typedef mcx_s32  s32;
-typedef mcx_s64  s64;
-typedef mcx_u8   u8;
-typedef mcx_u16  u16;
-typedef mcx_u32  u32;
-typedef mcx_u64  u64;
-typedef mcx_be16 be16;
-typedef mcx_be32 be32;
-typedef mcx_be64 be64;
-typedef mcx_le16 le16;
-typedef mcx_le32 le32;
-typedef mcx_le64 le64;
+typedef __INT8_TYPE__   s8;
+typedef __INT16_TYPE__  s16;
+typedef __INT32_TYPE__  s32;
+typedef __INT64_TYPE__  s64;
+typedef __UINT8_TYPE__  u8;
+typedef __UINT16_TYPE__ u16;
+typedef __UINT32_TYPE__ u32;
+typedef __UINT64_TYPE__ u64;
 
-#if __SIZEOF_FLOAT__ == 4
-typedef float f32;
-#endif
-#if __SIZEOF_DOUBLE__ == 8
+typedef u16 __bitwise be16;
+typedef u32 __bitwise be32;
+typedef u64 __bitwise be64;
+typedef u16 __bitwise le16;
+typedef u32 __bitwise le32;
+typedef u64 __bitwise le64;
+
+typedef float  f32;
 typedef double f64;
-#endif
 #endif /* MCXEDIT_SOURCE */
-
 #endif /* LIBMCX_TYPES_H */

@@ -3,7 +3,6 @@
  */
 #ifndef LIBMCX_NBT_H
 #define LIBMCX_NBT_H 1
-#include <libmcx/types.h>
 #include <stdint.h>
 #include <sys/types.h>
 
@@ -28,8 +27,8 @@ enum nbt_tagid {
 
 /* Cache that is used for the recursive operations on NBT trees. */
 struct nbt_cache {
-	mcx_u8  tags[NBT_NEST_MAX];
-	mcx_s32 lens[NBT_NEST_MAX];
+	uint8_t tags[NBT_NEST_MAX];
+	int32_t lens[NBT_NEST_MAX];
 };
 
 /* Returns the tag length.
@@ -40,29 +39,29 @@ struct nbt_cache {
  *          <root won't be touched.
  * Returns the size in bytes of the current tag, or <0 for the error value as
  * "-error". */
-ssize_t nbt_taglen(const mcx_u8 *restrict tag, size_t maxlen, int root,
+ssize_t nbt_taglen(const uint8_t *restrict tag, size_t maxlen, int root,
 	struct nbt_cache *restrict cache);
 
 /* Writes an end tag at "buf".
  * Returns the offset in bytes for the new "head" of "buf",
  * and <0 for the error value is -error. */
-ssize_t nbt_addkey_end(u8 *buf, u8 *max);
+ssize_t nbt_addkey_end(uint8_t *buf, uint8_t *max);
 
 /* Writes an integer tag at "buf".
  * "name" is a NUL-terminated string, if NULL no string nor tag is written.
  * "id" sets the kind of integer.
  * Returns the offset in bytes for the new "head" of "buf",
  * and <0 for the error value is -error. */
-ssize_t nbt_addkey_int(u8 *buf, u8 *max,
-	const char *restrict name, enum nbt_tagid id, u64 val);
+ssize_t nbt_addkey_int(uint8_t *buf, uint8_t *max,
+	const char *restrict name, enum nbt_tagid id, uint64_t val);
 
 /* Writes an floating-point tag at "buf".
  * "name" is a NUL-terminated string, if NULL no string nor tag is written.
  * "id" sets the kind of floating-point tag.
  * Returns the offset in bytes for the new "head" of "buf",
  * and <0 for the error value is -error. */
-ssize_t nbt_addkey_float(u8 *buf, u8 *max,
-	const char *restrict name, enum nbt_tagid id, f64 val);
+ssize_t nbt_addkey_float(uint8_t *buf, uint8_t *max,
+	const char *restrict name, enum nbt_tagid id, double val);
 
 /* Writes an array tag at "buf".
  * "name" is a NUL-terminated string, if NULL no string nor tag is written.
@@ -70,8 +69,8 @@ ssize_t nbt_addkey_float(u8 *buf, u8 *max,
  * "dat"  contains the payload.
  * Returns the offset in bytes for the new "head" of "buf",
  * and <0 for the error value is -error. */
-ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
-	const char *restrict name, enum nbt_tagid id, s32 len,
+ssize_t nbt_addkey_arr(uint8_t *buf, uint8_t *max,
+	const char *restrict name, enum nbt_tagid id, int32_t len,
 	const void *restrict dat);
 
 /* Writes a string tag at "buf".
@@ -79,7 +78,7 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
  * "str" is the actual string payload.
  * Returns the offset in bytes for the new "head" of "buf",
  * and <0 for the error value is -error. */
-ssize_t nbt_addkey_str(u8 *buf, u8 *max,
+ssize_t nbt_addkey_str(uint8_t *buf, uint8_t *max,
 	const char *restrict name, const char *restrict str);
 
 /* Writes a list tag at "buf".
@@ -87,20 +86,20 @@ ssize_t nbt_addkey_str(u8 *buf, u8 *max,
  * "id"  sets the list kind.
  * Returns the offset in bytes for the new "head" of "buf",
  * and <0 for the error value is -error. */
-ssize_t nbt_addkey_list(u8 *buf, u8 *max,
-	const char *restrict name, enum nbt_tagid id, s32 len);
+ssize_t nbt_addkey_list(uint8_t *buf, uint8_t *max,
+	const char *restrict name, enum nbt_tagid id, int32_t len);
 
 /* Writes a compound tag at "buf".
  * "name" is a NUL-terminated string, if NULL no string nor tag is written.
  * Returns the offset in bytes for the new "head" of "buf",
  * and <0 for the error value is -error. */
-ssize_t nbt_addkey_compound(u8 *buf, u8 *max,
+ssize_t nbt_addkey_compound(uint8_t *buf, uint8_t *max,
 	const char *restrict name);
 
 /* Compares the name of the fully-fledged tag
  * against a NUL-terminated string.
  * Returns 0 if both are equal. */
-int nbt_tagnamecmp(const mcx_u8 *tag, const char *str);
+int nbt_tagnamecmp(const uint8_t *tag, const char *str);
 
 /* Destructively formats a dot-seperated path to be NUL-seperated.
  * Returns the pointer to the next node,

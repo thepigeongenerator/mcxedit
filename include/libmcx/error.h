@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#ifndef LIBMCX_ERR_H
-#define LIBMCX_ERR_H 1
-#include <libmcx/atrb.h>
+#ifndef LIBMCX_ERROR_H
+#define LIBMCX_ERROR_H 1
+#include <libmcx/stddef.h>
 
 /* libmcx error codes */
 #define MCX_ETAG   1 /* Invalid NBT tag */
@@ -17,4 +17,4 @@
  * or NULL if the error code was invalid. */
 const char *mcx_errstr(int code) MCX_CONST MCX_COLD;
 
-#endif /* LIBMCX_ERR_H */
+#endif /* LIBMCX_ERROR_H */

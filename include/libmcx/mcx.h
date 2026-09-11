@@ -4,7 +4,7 @@
 #ifndef LIBMCX_MCX_H
 #define LIBMCX_MCX_H 1
 
-#include <libmcx/atrb.h>
+#include <libmcx/stddef.h>
 #include <libmcx/types.h>
 #include <stdio.h>
 
@@ -13,11 +13,6 @@
 #define MCX_TABLES_SIZE  0x2000
 #define MCX_TABLE_ITEMS  0x400
 #define MCX_TABLES_ITEMS 0x800
-
-struct mcx {
-	mcx_be32 table[MCX_TABLES_ITEMS];
-	mcx_u8   sector[][MCX_SECTOR_SIZE];
-};
 
 /* Repairs faults in the file format,
  * outputting warnings describing the repaired fault & affected chunk.

@@ -1,10 +1,20 @@
 /* SPDX-License-Identifier: GPL-2.0-only
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
-#ifndef LIBMCX_ATRB_H
-#define LIBMCX_ATRB_H 1
+#ifndef LIBMCX_STDDEF_H
+#define LIBMCX_STDDEF_H 1
+#include <libmcx/types.h>
 
-/* A GCC-compatable compiler is mand for these definitions.
+#ifdef MCXEDIT_SOURCE
+#undef false
+#undef true
+enum {
+	false = 0,
+	true  = 1,
+};
+#endif /* MCXEDIT_SOURCE */
+
+/* A GCC-compatable compiler is mandated for these definitions.
  */
 #ifdef __GNUC__
 
@@ -41,7 +51,6 @@
 #define MCX_MALLOC        __attribute__((__malloc__))
 #define MCX_DEALLOC(func) __attribute__((__malloc__ args))
 
-
 /* Specifies that the arguments specified in the macro arguments
  * may not be NULL. It may be used for both function calls, and definitions. */
 #if __has_attribute(__nonnull__)
@@ -59,14 +68,29 @@
  * calls. */
 #define MCX_PURE __attribute__((__pure__))
 
+#else
+#define MCX_COLD
+#define MCX_CONST
+#define MCX_PRINTF
+#define MCX_SCANF
+#define MCX_HOT
+#define MCX_MALLOC
+#define MCX_DEALLOC(func)
+#define MCX_NONNULL
+#define MCX_NORET
+#define MCX_PURE
+#endif /* __GNUC__ */
+
 /* These definitions will only be included for MCX source code. */
 #ifdef MCXEDIT_SOURCE
+
+#define lengthof(symbol) (sizeof(symbol) / sizeof(*symbol))
 
 /* Marks a function as unused and will prevent GCC from emitting a warning. */
 #define __maybe_unused __attribute__((__unused__))
 
-/* Marks a function as used, and will cause the code must be emitted, even if it appears
- * like the function is never referenced. */
+/* Marks a function as used, and will cause the code must be emitted,
+ * even if it appears like the function is never referenced. */
 #define __used __attribute__((__used__))
 
 /* Explicitly defines that a statement falls through to a following case
@@ -80,18 +104,5 @@
 #define unlikely(x) __builtin_expect(!!(x), 0)
 #define   likely(x) __builtin_expect(!!(x), 1)
 #endif /* MCXEDIT_SOURCE */
-
-#else
-#define MCX_COLD
-#define MCX_CONST
-#define MCX_PRINTF
-#define MCX_SCANF
-#define MCX_HOT
-#define MCX_MALLOC
-#define MCX_DEALLOC(func)
-#define MCX_NONNULL
-#define MCX_NORET
-#define MCX_PURE
-#endif /* __GNUC__ */
 
 #endif /* LIBMCX_ATRB_H */

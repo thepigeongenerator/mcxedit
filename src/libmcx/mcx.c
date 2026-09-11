@@ -10,6 +10,11 @@
 
 #include "endian.h"
 
+struct mcx {
+	be32 table[MCX_TABLES_ITEMS];
+	u8   sector[][MCX_SECTOR_SIZE];
+};
+
 off_t mcx_repair(struct mcx *mcx, off_t size)
 {
 	assert(!((uintptr_t)mcx & 3));

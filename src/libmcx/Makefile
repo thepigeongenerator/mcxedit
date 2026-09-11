@@ -2,5 +2,5 @@
 # SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
 
 libmcx-cflags = -fPIC
-libmcx-obj = err.o mcx.o nbt.o
+libmcx-obj = error.o mcx.o nbt.o
 -include $(libmcx-obj:%.o=%.d)
