@@ -133,17 +133,7 @@ libmcx.so libmcx.dll: ${libmcx-obj}
 	$Qgzip -fk $<
 
 # Manpage generation
-%.0: %.0.rst
-%.1: %.1.rst
-%.2: %.2.rst
-%.3: %.3.rst
-%.4: %.4.rst
-%.5: %.5.rst
-%.6: %.6.rst
-%.7: %.7.rst
-%.8: %.8.rst
-%.9: %.9.rst
-%: %.rst
+man/%: man/%.rst
 	@${msg} RST2MAN $@
 	${Q}sed 's/@@VERSION@@/'${VERONLY}'/g;'\
 	's/@@DATE@@/'$(shell date +%Y-%m-%d)'/g' $< | rst2man >$@
