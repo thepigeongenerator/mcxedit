@@ -72,6 +72,7 @@ static int nbt_taglen_list_of_lists(void)
 	buf += addkey_str(buf, nbtdatmax, NULL, "UwU");
 	buf += addkey_list(buf, nbtdatmax, NULL, NBT_F64, 1);
 	buf += addkey_float(buf, nbtdatmax, NULL, NBT_F64, 0.5f);
+	buf += addkey_end(buf, nbtdatmax);
 
 	ssize_t expected = buf - nbtdat;
 	ssize_t acquired = nbt_taglen(nbtdat, expected, 0, &cache);
