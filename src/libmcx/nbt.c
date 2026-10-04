@@ -283,6 +283,10 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 		return -EFAULT;
 	unaligned_write_be32(head, len);
 	head += 4;
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	memcpy(head, dat, size);
+	head += size;
+#else
 	switch (membsize) {
 	case 1:
 		memcpy(head, dat, size);
@@ -303,6 +307,7 @@ ssize_t nbt_addkey_arr(u8 *buf, u8 *max,
 		}
 		break;
 	}
+#endif
 	return head - buf;
 }
 
