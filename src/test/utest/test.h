@@ -30,7 +30,7 @@ extern size_t testcap;
 			testcap *= 2;                                          \
 			tests = realloc(tests, testcap * sizeof(*tests));      \
 			if (!tests) {                                          \
-				error(1, errno, NULL);                         \
+				error(1, errno, "cannot realloc test array");  \
 				__builtin_unreachable();                       \
 			}                                                      \
 		}                                                              \
