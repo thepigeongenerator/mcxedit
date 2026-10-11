@@ -69,14 +69,6 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 
 		s32 n;
 		switch (id) {
-		case NBT_ARR_S8:
-			if (tmp+4 > max)
-				return -EFAULT;
-
-			n = unaligned_read_be32(tmp);
-			if (n < 0) return -EOVERFLOW;
-			tmp += n + 4;
-			goto check_and_continue;
 		case NBT_STR:
 			if (tmp+2 > max)
 				return -EFAULT;
@@ -109,17 +101,15 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			goto depth_increase;
 		case NBT_COMPOUND:
 			goto depth_increase;
-		}
-
-		if (id <= NBT_ARR_S64) {
-			size_t size = nbt_primitive_size[id];
-
+		case NBT_ARR_S8:
+		case NBT_ARR_S32:
+		case NBT_ARR_S64:
 			if (tmp+4 > max)
 				return -EFAULT;
 
 			s32 n = unaligned_read_be32(tmp);
 			if (n < 0) return -EOVERFLOW;
-			tmp += size * n + 4;
+			tmp += nbt_primitive_size[id] * n + 4;
 			goto check_and_continue;
 		}
 		return -EMCXTAG;
