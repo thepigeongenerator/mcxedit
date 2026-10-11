@@ -43,8 +43,13 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 	const u8 *tmp = tag;
 	const u8 *max = tag + maxlen;
 	do {
-		/* Because it is a recursive algorithm,
-		 * we must keep track of the tags in a cache. */
+		/* The cache is used for allowing lists to create the recursive
+		 * nightmare that they do.  Index [depth] will contain the list
+		 * type, and index [depth-1] equates to NBT_LIST if we're
+		 * parsing a list item. */
+		/* TODO: The way depth and the cache are handled is
+		 * messy at best.  Consider *just* storing data for
+		 * lists, have it be any non-list value otherwise. */
 		if (!depth || cache->tags[depth-1] != NBT_LIST) {
 			id = *tmp++;
 
@@ -76,15 +81,12 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 			tmp += unaligned_read_be16(tmp) + 2;
 			goto check_and_continue;
 		case NBT_LIST:
-			/* WARN: Setting ID to current depth? */
+			/* NOTE: If we're in a list of lists, this write will
+			 * be redundant. */
 			cache->tags[depth] = id;
 
 			if (tmp+5 > max)
 				return -EFAULT;
-
-			/* NOTE: May want to increment and check here.
-			 * Since we'd skip the limit if it's a primitive.
-			 * Then again, it wouldn't cause much issue. */
 
 			id = *tmp++;
 			n = unaligned_read_be32(tmp);
@@ -93,6 +95,13 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 
 			/* NOTE: TAG_END is allowed, but has a size of 0. */
 			if (id < PRIMITIVES) {
+				/* TODO: Test how Minecraft treats depth.*/
+				/* WARN: Because depth never increases, it isn't
+				 * checked.  This may result in the data being
+				 * treated as "fine", whilst the Minecraft
+				 * code doesn't treat it as such.
+				 * I don't know what the Minecraft code does,
+				 * nor do I see this as too big of an issue. */
 				tmp += nbt_primitive_size[id] * n;
 				goto check_and_continue;
 			}
@@ -126,7 +135,7 @@ depth_decrease:
 		depth--;
 		continue;
 check_and_continue:
-		/* WARN: If taglen is correct,
+		/* TODO: Check if taglen is correct,
 		 * but means moving to the end of the buffer,
 		 * will this result in EFAULT? */
 		if (tmp < max) continue;
