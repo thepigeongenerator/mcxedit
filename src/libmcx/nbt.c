@@ -39,7 +39,7 @@ ssize_t nbt_taglen(const u8 *restrict tag, size_t maxlen, int root,
 		return -EINVAL;
 
 	int depth = root;
-	u8 id;
+	enum nbt_tagid id;
 	const u8 *tmp = tag;
 	const u8 *max = tag + maxlen;
 	do {
