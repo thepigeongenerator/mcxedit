@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0-only
+/* SPDX-License-Identifier: BSD-2-Clause
  * SPDX-FileCopyrightText: ©2025 Quinn Zieltjens <zieltjens@pigeonware.org>
  */
 #ifndef LIBMCX_NBT_H

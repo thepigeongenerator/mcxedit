@@ -1,4 +1,4 @@
-.. SPDX-License-Identifier: GPL-2.0-only
+.. SPDX-License-Identifier: BSD-2-Clause
 .. SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
 
 .. rst2man shows "Name", rather than "NAME", annoying, but can live with it.

@@ -1,3 +1,6 @@
+/* SPDX-License-Identifier: BSD-2-Clause
+ * SPDX-FileCopyrightText: ©2026 Quinn Zieltjens <zieltjens@pigeonware.org>
+ */
 #include "utest/test.h"
 #include <libmcx/error.h>
 #include <libmcx/nbt.h>
